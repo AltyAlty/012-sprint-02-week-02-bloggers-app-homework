@@ -1,0 +1,39 @@
+import { NextFunction, Request, Response } from 'express';
+import { HttpStatus } from '../../core/types/http-statuses';
+import { SETTINGS } from '../../core/settings/settings';
+
+/*Middleware "superAdminGuardMiddleware" отвечает за базовую авторизацию в приложении.*/
+export const superAdminGuardMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  /*Получаем заголовок "Authorization" из запроса. Должно быть вида "Basic <base64-encoded-credentials>"*/
+  const auth = req.headers['authorization'] as string;
+
+  /*Если получить заголовок "Authorization" не удалось, то сообщаем об этом клиенту.*/
+  if (!auth) {
+    res.sendStatus(HttpStatus.Unauthorized_401);
+    return;
+  }
+
+  /*Разбиваем строку по пробелу, получая тип авторизации ("Basic") и токен.*/
+  const [authType, token] = auth.split(' ');
+
+  /*Если тип авторизации не "Basic", то сообщаем об этом клиенту.*/
+  if (authType !== 'Basic') {
+    res.sendStatus(HttpStatus.Unauthorized_401);
+    return;
+  }
+
+  /*Расшифровываем токен из формата base64 в обычную строку.*/
+  const credentials = Buffer.from(token, 'base64').toString('utf-8');
+  /*Разделяем расшифрованный токен на логин и пароль.*/
+  const [username, password] = credentials.split(':');
+
+  /*Если логин и пароль не совпадают с заранее заданными значениями, то сообщаем об этом клиенту.*/
+  if (username !== SETTINGS.BASIC_AUTH_ADMIN_USERNAME || password !== SETTINGS.BASIC_AUTH_ADMIN_PASSWORD) {
+    res.sendStatus(HttpStatus.Unauthorized_401);
+    return;
+  }
+
+  /*Если логин и пароль совпадают с заранее заданными значениями, то разрешаем дальнейшее выполнение запроса при помощи
+  функции "next()".*/
+  next();
+};
