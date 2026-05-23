@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { paginationValidationMiddleware } from '../../core/middlewares/validation/pagination-validation.middleware';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
-import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
+import { basicAuthGuardMiddleware } from '../../auth/middlewares/guard-middlewares/basic-auth.guard-middleware';
 import { idValidation } from '../../core/middlewares/validation/params-id-validation.middlewares';
 import { getUsersListHandler } from './handlers/get-users-list.handler';
 import { UserSortFieldInputDTO } from './input-dto/user-sort-field.input-dto';
@@ -11,8 +11,8 @@ import { userCreateInputValidation } from '../validation/user-input-validation.m
 
 /*Роутер из Express для работы с данными по пользователям.*/
 export const usersRouter = Router({});
-/*Применяем middleware "superAdminGuardMiddleware" ко всем маршрутам.*/
-usersRouter.use(superAdminGuardMiddleware);
+/*Применяем middleware "basicAuthGuardMiddleware" ко всем маршрутам.*/
+usersRouter.use(basicAuthGuardMiddleware);
 
 /*Конфигурируем роутер "usersRouter".*/
 usersRouter

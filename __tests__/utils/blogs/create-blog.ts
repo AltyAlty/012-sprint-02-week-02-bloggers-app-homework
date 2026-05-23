@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { Express } from 'express';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { generateBasicAuthToken } from '../auth/generate-admin-auth-token';
 import { getCreateBlogInputDTO } from './get-create-blog-input-dto';
 import { SETTINGS } from '../../../src/core/settings/settings';
@@ -17,7 +17,7 @@ export const createBlog = async (app: Express, blogDTO?: CreateBlogInputDTO): Pr
     .post(SETTINGS.BLOGS_PATH)
     .set('Authorization', generateBasicAuthToken())
     .send(testCreateBlogData)
-    .expect(HttpStatus.Created_201);
+    .expect(HttpStatuses.Created_201);
 
   /*Возвращаем тело ответа.*/
   return createBlogResponse.body;

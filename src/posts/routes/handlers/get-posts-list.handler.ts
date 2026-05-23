@@ -4,6 +4,7 @@ import { matchedData } from 'express-validator';
 import { GetPostsListQueryInputDTO } from '../input-dto/get-posts-list-query.input-dto';
 import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
 import { postsQueryService } from '../../application/posts.query-service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 
 /*Функция-обработчик "getPostsListHandler()" для GET-запросов для получения данных по всем постам при помощи
 query-параметров.*/
@@ -23,9 +24,11 @@ export const getPostsListHandler = async (req: Request<{}, {}, {}, GetPostsListQ
     "defaultPaginationSettingsType".*/
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
     /*Просим query-сервис "postsQueryService" найти данные по постам.*/
-    const paginatedPostsListOutput = await postsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+    const paginatedPostsListResult = await postsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+    /*Получаем HTTP-статус операции по поиску данных по постам.*/
+    const paginatedPostsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedPostsListResult.status);
     /*Отправляем данные по постам клиенту.*/
-    res.send(paginatedPostsListOutput);
+    res.status(paginatedPostsListResultHttpStatus).send(paginatedPostsListResult.data.paginatedPostsListOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

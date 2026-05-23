@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { blogsQueryService } from '../../application/blogs.query-service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { HttpStatuses } from '../../../core/types/http-statuses';
 
 /*"Request" из Express используется для типизации параметра "req", а "Response" из Express используется для типизации
 параметра "res".
@@ -19,9 +20,17 @@ export const getBlogByIdHandler = async (req: Request<{ id: string }>, res: Resp
     /*Получаем ID блога.*/
     const blogId = req.params.id;
     /*Просим query-сервис "blogsQueryService" найти данные по блогу по ID.*/
-    const blogOutput = await blogsQueryService.findById(blogId);
-    /*Отправляем данные по блогу клиенту.*/
-    res.status(HttpStatus.Ok_200).send(blogOutput);
+    const blogResult = await blogsQueryService.findById(blogId);
+    /*Получаем HTTP-статус операции по поиску данных по блогу по ID.*/
+    const blogResultHttpStatus = mapResultCodeToHttpStatus(blogResult.status);
+
+    /*Если данные по блогу не были найдены, то сообщаем об этом клиенту.*/
+    if (blogResultHttpStatus !== HttpStatuses.Ok_200) {
+      return res.status(blogResultHttpStatus).send(blogResult.extensions);
+    }
+
+    /*Если данные по блогу были найдены, то отправляем их клиенту.*/
+    res.status(blogResultHttpStatus).send(blogResult.data?.blogOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

@@ -6,7 +6,7 @@ import { runDB, stopDb } from '../../../src/db/mongodb/mongo.db';
 import { SETTINGS } from '../../../src/core/settings/settings';
 import { clearDb } from '../../utils/db/clear-db';
 import request from 'supertest';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { createUser } from '../../utils/users/create-user';
 
 describe('Auth API body and auth validation checks', () => {
@@ -44,19 +44,19 @@ describe('Auth API body and auth validation checks', () => {
     const checkUserAuthentication = async (
       loginOrEmail: string | null,
       password: string | null,
-      status: HttpStatus
+      status: HttpStatuses
     ) => {
       await request(app).post(`${SETTINGS.AUTH_PATH}/login`).send({ loginOrEmail, password }).expect(status);
     };
 
-    await checkUserAuthentication(incorrectLoginOrEmail1, credentials01.password, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(incorrectLoginOrEmail2, credentials01.password, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(incorrectLoginOrEmail3, credentials01.password, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(credentials01.login, incorrectPassword1, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(credentials01.login, incorrectPassword2, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(credentials01.login, incorrectPassword3, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(credentials01.login, incorrectPassword4, HttpStatus.BadRequest_400);
-    await checkUserAuthentication(credentials01.login, incorrectPassword5, HttpStatus.BadRequest_400);
+    await checkUserAuthentication(incorrectLoginOrEmail1, credentials01.password, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(incorrectLoginOrEmail2, credentials01.password, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(incorrectLoginOrEmail3, credentials01.password, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(credentials01.login, incorrectPassword1, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(credentials01.login, incorrectPassword2, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(credentials01.login, incorrectPassword3, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(credentials01.login, incorrectPassword4, HttpStatuses.BadRequest_400);
+    await checkUserAuthentication(credentials01.login, incorrectPassword5, HttpStatuses.BadRequest_400);
   });
 
   it('❌ 002 should not authenticate a user without proper credentials; POST /api/auth/login', async () => {
@@ -67,14 +67,14 @@ describe('Auth API body and auth validation checks', () => {
     const checkUserAuthentication = async (
       loginOrEmail: string | null,
       password: string | null,
-      status: HttpStatus
+      status: HttpStatuses
     ) => {
       await request(app).post(`${SETTINGS.AUTH_PATH}/login`).send({ loginOrEmail, password }).expect(status);
     };
 
-    await checkUserAuthentication(credentials01.login, credentials02.password, HttpStatus.Unauthorized_401);
-    await checkUserAuthentication(credentials01.email, credentials02.password, HttpStatus.Unauthorized_401);
-    await checkUserAuthentication(credentials02.login, credentials01.password, HttpStatus.Unauthorized_401);
-    await checkUserAuthentication(credentials02.email, credentials01.password, HttpStatus.Unauthorized_401);
+    await checkUserAuthentication(credentials01.login, credentials02.password, HttpStatuses.Unauthorized_401);
+    await checkUserAuthentication(credentials01.email, credentials02.password, HttpStatuses.Unauthorized_401);
+    await checkUserAuthentication(credentials02.login, credentials01.password, HttpStatuses.Unauthorized_401);
+    await checkUserAuthentication(credentials02.email, credentials01.password, HttpStatuses.Unauthorized_401);
   });
 });

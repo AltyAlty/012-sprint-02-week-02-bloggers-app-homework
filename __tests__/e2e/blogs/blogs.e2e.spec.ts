@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import request from 'supertest';
 import { setupApp } from '../../../src/setup-app';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { generateBasicAuthToken } from '../../utils/auth/generate-admin-auth-token';
 import { clearDb } from '../../utils/db/clear-db';
 import { runDB, stopDb } from '../../../src/db/mongodb/mongo.db';
@@ -45,7 +45,7 @@ describe('Blogs API endpoints check', () => {
   /*Описываем тесты.*/
   it('✅ 001 should create a blog; POST /api/blogs', async () => {
     const createdBlog: BlogOutputDTO = await createBlog(app);
-    const getBlogsListResponse = await request(app).get(SETTINGS.BLOGS_PATH).expect(HttpStatus.Ok_200);
+    const getBlogsListResponse = await request(app).get(SETTINGS.BLOGS_PATH).expect(HttpStatuses.Ok_200);
     expect(getBlogsListResponse.body.items).toBeInstanceOf(Array);
     expect(getBlogsListResponse.body.items.length).toBe(1);
     expect(getBlogsListResponse.body.totalCount).toBe(1);
@@ -54,7 +54,7 @@ describe('Blogs API endpoints check', () => {
 
   it('✅ 002 should return a list of blogs; GET /api/blogs', async () => {
     await Promise.all([createBlog(app), createBlog(app)]);
-    const getBlogsListResponse = await request(app).get(SETTINGS.BLOGS_PATH).expect(HttpStatus.Ok_200);
+    const getBlogsListResponse = await request(app).get(SETTINGS.BLOGS_PATH).expect(HttpStatuses.Ok_200);
     expect(getBlogsListResponse.body.items).toBeInstanceOf(Array);
     expect(getBlogsListResponse.body.items.length).toBe(2);
     expect(getBlogsListResponse.body.totalCount).toBe(2);
@@ -83,7 +83,7 @@ describe('Blogs API endpoints check', () => {
       .get(
         `${SETTINGS.BLOGS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&searchNameTerm=${searchNameTerm}&sortDirection=${sortDirection}&sortBy=${sortBy}`
       )
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getBlogsListResponse.body.items).toBeInstanceOf(Array);
     expect(getBlogsListResponse.body.items.length).toBe(5);
@@ -110,7 +110,7 @@ describe('Blogs API endpoints check', () => {
 
     const getPostsListByBlogIdResponse = await request(app)
       .get(`${SETTINGS.BLOGS_PATH}/${createdBlogId}/posts?pageSize=5`)
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getPostsListByBlogIdResponse.body.items).toBeInstanceOf(Array);
     expect(getPostsListByBlogIdResponse.body.items.length).toBe(5);
@@ -126,11 +126,11 @@ describe('Blogs API endpoints check', () => {
       .post(`${SETTINGS.BLOGS_PATH}/${createdBlogId}/posts`)
       .set('Authorization', adminToken)
       .send(createPostData)
-      .expect(HttpStatus.Created_201);
+      .expect(HttpStatuses.Created_201);
 
     const getPostsListByBlogIdResponse = await request(app)
       .get(`${SETTINGS.BLOGS_PATH}/${createdBlogId}/posts`)
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getPostsListByBlogIdResponse.body.items).toBeInstanceOf(Array);
     expect(getPostsListByBlogIdResponse.body.items.length).toBe(1);
@@ -172,8 +172,8 @@ describe('Blogs API endpoints check', () => {
     await request(app)
       .delete(`${SETTINGS.BLOGS_PATH}/${createdBlogId}`)
       .set('Authorization', adminToken)
-      .expect(HttpStatus.NoContent_204);
+      .expect(HttpStatuses.NoContent_204);
 
-    await request(app).get(`${SETTINGS.BLOGS_PATH}/${createdBlogId}`).expect(HttpStatus.NotFound_404);
+    await request(app).get(`${SETTINGS.BLOGS_PATH}/${createdBlogId}`).expect(HttpStatuses.NotFound_404);
   });
 });

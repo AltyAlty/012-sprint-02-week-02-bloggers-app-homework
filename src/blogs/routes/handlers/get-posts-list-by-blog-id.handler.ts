@@ -4,6 +4,8 @@ import { matchedData } from 'express-validator';
 import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
 import { GetPostsListInExistingBlogQueryInputDTO } from '../../../posts/routes/input-dto/get-posts-list-in-existing-blog-query.input-dto';
 import { postsQueryService } from '../../../posts/application/posts.query-service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { HttpStatuses } from '../../../core/types/http-statuses';
 
 /*Функция-обработчик "getPostsListByBlogIdHandler()" для GET-запросов для получения данных по всем постам в существующем
 блоге по ID с пагинацией при помощи URI-параметров.*/
@@ -30,13 +32,21 @@ export const getPostsListByBlogIdHandler = async (
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
 
     /*Просим query-сервис "postsQueryService" найти данные по постам в существующем блоге по ID.*/
-    const paginatedPostsListOutput = await postsQueryService.findManyByBlogId(
+    const paginatedPostsListResult = await postsQueryService.findManyByBlogId(
       blogId,
       sanitizedQueryInputWithDefaultPaginationSettings
     );
 
-    /*Отправляем по постам в существующем блоге клиенту.*/
-    res.send(paginatedPostsListOutput);
+    /*Получаем HTTP-статус операции по поиску постов в существующем блоге по ID.*/
+    const paginatedPostsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedPostsListResult.status);
+
+    /*Если данные по постам не были найдены, то сообщаем об этом клиенту.*/
+    if (paginatedPostsListResultHttpStatus !== HttpStatuses.Ok_200) {
+      return res.status(paginatedPostsListResultHttpStatus).send(paginatedPostsListResult.extensions);
+    }
+
+    /*Если данные по постам были найдены, то отправляем их клиенту.*/
+    res.status(paginatedPostsListResultHttpStatus).send(paginatedPostsListResult.data!.paginatedPostsListOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

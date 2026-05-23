@@ -1,6 +1,5 @@
 import { ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../db/mongodb/mongo.db';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { UserType } from '../types/user.type';
 
 /*Репозиторий "usersRepository" для работы с данными по пользователям в БД.*/
@@ -42,11 +41,10 @@ export const usersRepository = {
   },
 
   /*Метод "deleteById()" для удаления пользователя по ID в БД.*/
-  async deleteById(userId: string): Promise<void> {
+  async deleteById(userId: string): Promise<number> {
     /*Просим коллекцию "usersCollection" удалить пользователя по ID в БД.*/
     const deleteResult = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
-    /*Если пользователь не был найден, то выкидываем ошибку с информацией об этом.*/
-    if (deleteResult.deletedCount < 1) throw new RepositoryNotFoundError('User does not exist');
-    return;
+    /*Возвращаем количество удаленных пользователей.*/
+    return deleteResult.deletedCount;
   },
 };

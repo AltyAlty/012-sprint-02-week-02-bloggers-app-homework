@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../../../core/types/http-statuses';
 import { postsService } from '../../../posts/application/posts.service';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { CreatePostInExistingBlogInputDTO } from '../../../posts/routes/input-dto/create-post-in-existing-blog.input-dto';
 import { postsQueryService } from '../../../posts/application/posts.query-service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { HttpStatuses } from '../../../core/types/http-statuses';
 
 /*Функция-обработчик "createPostInExistingBlogByIdHandler()" для POST-запросов для добавления нового постав в
 существующий блог по ID при помощи URI-параметров.*/
@@ -15,11 +16,27 @@ export const createPostInExistingBlogByIdHandler = async (
     /*Получаем ID блога.*/
     const blogId = req.params.blogId;
     /*Просим сервис "postsService" создать пост в существующем блоге.*/
-    const createdPostId = await postsService.createInExistingBlog(blogId, req.body);
-    /*Просим query-сервис "postsQueryService" найти созданный пост по ID.*/
-    const postOutput = await postsQueryService.findById(createdPostId);
-    /*Отправляем данные по посту клиенту.*/
-    res.status(HttpStatus.Created_201).send(postOutput);
+    const createdPostResult = await postsService.createInExistingBlog(blogId, req.body);
+    /*Получаем HTTP-статус операции по созданию поста в существующем блоге.*/
+    const createdPostResultHttpStatus = mapResultCodeToHttpStatus(createdPostResult.status);
+
+    /*Если пост не был создан, то сообщаем об этом клиенту.*/
+    if (createdPostResultHttpStatus !== HttpStatuses.Created_201) {
+      return res.status(createdPostResultHttpStatus).send(createdPostResult.extensions);
+    }
+
+    /*Если пост был создан, то просим query-сервис "postsQueryService" найти данные по созданному посту по ID.*/
+    const postResult = await postsQueryService.findById(createdPostResult.data!.postId);
+    /*Получаем HTTP-статус операции по поиску данных по созданному посту по ID.*/
+    const postResultHttpStatus = mapResultCodeToHttpStatus(postResult.status);
+
+    /*Если данные по созданному посту не были найдены, то сообщаем об этом клиенту.*/
+    if (postResultHttpStatus !== HttpStatuses.Ok_200) {
+      return res.status(postResultHttpStatus).send(postResult.extensions);
+    }
+
+    /*Если данные по созданному посту были найдены, то отправляем их клиенту.*/
+    res.status(createdPostResultHttpStatus).send(postResult.data?.postOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

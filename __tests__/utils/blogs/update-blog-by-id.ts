@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { Express } from 'express';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { generateBasicAuthToken } from '../auth/generate-admin-auth-token';
 import { SETTINGS } from '../../../src/core/settings/settings';
 import { getUpdateBlogInputDTO } from './get-update-blog-input-dto';
@@ -16,7 +16,7 @@ export const updateBlogById = async (app: Express, blogId: string, blogDTO?: Upd
     .put(`${SETTINGS.BLOGS_PATH}/${blogId}`)
     .set('Authorization', generateBasicAuthToken())
     .send(testUpdateBlogData)
-    .expect(HttpStatus.NoContent_204);
+    .expect(HttpStatuses.NoContent_204);
 
   /*Возвращаем тело ответа.*/
   return updateBlogResponse.body;

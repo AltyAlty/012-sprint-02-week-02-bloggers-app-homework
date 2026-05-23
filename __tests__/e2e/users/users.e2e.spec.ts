@@ -8,7 +8,7 @@ import { clearDb } from '../../utils/db/clear-db';
 import { UserOutputDTO } from '../../../src/users/routes/output-dto/user.output-dto';
 import { createUser } from '../../utils/users/create-user';
 import request from 'supertest';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 
 describe('Users API endpoints check', () => {
   const app = express();
@@ -33,7 +33,7 @@ describe('Users API endpoints check', () => {
     const getUsersListResponse = await request(app)
       .get(SETTINGS.USERS_PATH)
       .set('Authorization', adminToken)
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getUsersListResponse.body.items).toBeInstanceOf(Array);
     expect(getUsersListResponse.body.items.length).toBe(1);
@@ -52,7 +52,7 @@ describe('Users API endpoints check', () => {
     const getUsersListResponse = await request(app)
       .get(SETTINGS.USERS_PATH)
       .set('Authorization', adminToken)
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getUsersListResponse.body.items).toBeInstanceOf(Array);
     expect(getUsersListResponse.body.items.length).toBe(2);
@@ -84,7 +84,7 @@ describe('Users API endpoints check', () => {
         `${SETTINGS.USERS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&searchLoginTerm=${searchLoginTerm}&searchEmailTerm=${searchEmailTerm}&sortDirection=${sortDirection}&sortBy=${sortBy}`
       )
       .set('Authorization', adminToken)
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getUsersListResponse.body.items).toBeInstanceOf(Array);
     expect(getUsersListResponse.body.items.length).toBe(4);
@@ -102,12 +102,12 @@ describe('Users API endpoints check', () => {
     await request(app)
       .delete(`${SETTINGS.USERS_PATH}/${createdUserId}`)
       .set('Authorization', adminToken)
-      .expect(HttpStatus.NoContent_204);
+      .expect(HttpStatuses.NoContent_204);
 
     const getUsersListResponse = await request(app)
       .get(SETTINGS.USERS_PATH)
       .set('Authorization', adminToken)
-      .expect(HttpStatus.Ok_200);
+      .expect(HttpStatuses.Ok_200);
 
     expect(getUsersListResponse.body.items).toBeInstanceOf(Array);
     expect(getUsersListResponse.body.items.length).toBe(0);

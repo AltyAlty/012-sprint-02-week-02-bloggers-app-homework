@@ -1,19 +1,30 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../../../core/types/http-statuses';
+import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { CreateUserInputDTO } from '../input-dto/create-user.input-dto';
 import { usersService } from '../../application/users.service';
 import { usersQueryService } from '../../application/users.query-service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 
 /*Функция-обработчик "createUserHandler()" для POST-запросов для добавления нового пользователя.*/
 export const createUserHandler = async (req: Request<{}, {}, CreateUserInputDTO>, res: Response) => {
   try {
     /*Просим сервис "usersService" создать нового пользователя.*/
-    const createdUserId = await usersService.create(req.body);
+    const createdUserResult = await usersService.create(req.body);
+    /*Получаем HTTP-статус операции по созданию нового пользователя.*/
+    const createdUserResultHttpStatus = mapResultCodeToHttpStatus(createdUserResult.status);
     /*Просим query-сервис "usersQueryService" найти данные по созданному пользователю по ID.*/
-    const userOutput = await usersQueryService.findById(createdUserId);
-    /*Отправляем данные по созданному пользователю клиенту.*/
-    res.status(HttpStatus.Created_201).send(userOutput);
+    const userResult = await usersQueryService.findById(createdUserResult.data.userId);
+    /*Получаем HTTP-статус операции по поиску данных по созданному пользователю по ID.*/
+    const userResultHttpStatus = mapResultCodeToHttpStatus(userResult.status);
+
+    /*Если данные по созданному пользователю не были найдены, то сообщаем об этом клиенту.*/
+    if (userResultHttpStatus !== HttpStatuses.Ok_200) {
+      return res.status(userResultHttpStatus).send(userResult.extensions);
+    }
+
+    /*Если данные по созданному пользователю были найдены, то отправляем их клиенту.*/
+    res.status(createdUserResultHttpStatus).send(userResult.data!.userOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

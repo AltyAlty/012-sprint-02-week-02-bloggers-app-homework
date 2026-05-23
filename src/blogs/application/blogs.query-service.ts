@@ -4,28 +4,56 @@ import { mapToPaginatedBlogsListOutputDTO } from '../repositories/mappers/map-to
 import { PaginatedBlogsListOutputDTO } from '../routes/output-dto/paginated-blogs-list.output-dto';
 import { mapToBlogOutputDTO } from '../repositories/mappers/map-to-blog-output-dto.util';
 import { BlogOutputDTO } from '../routes/output-dto/blog.output-dto';
+import { ResultStatuses } from '../../core/types/result/result-statuses';
+import { Result } from '../../core/types/result/result.type';
 
 /*Query-сервис "blogsQueryService" для работы с данными по блогам.*/
 export const blogsQueryService = {
   /*Метод "findMany()" для поиска данных по блогам.*/
-  async findMany(queryDTO: GetBlogsListQueryInputDTO): Promise<PaginatedBlogsListOutputDTO> {
+  async findMany(
+    queryDTO: GetBlogsListQueryInputDTO
+  ): Promise<Result<{ paginatedBlogsListOutput: PaginatedBlogsListOutputDTO }>> {
     /*Просим query-репозиторий "blogsQueryRepository" найти данные по блогам в БД.*/
     const { items, totalCount } = await blogsQueryRepository.findMany(queryDTO);
 
     /*Преобразовываем данные по блогам из БД в подготовленные для пагинации данные.*/
-    return mapToPaginatedBlogsListOutputDTO(items, {
+    const paginatedBlogsListOutput = mapToPaginatedBlogsListOutputDTO(items, {
       pageNumber: queryDTO.pageNumber,
       pageSize: queryDTO.pageSize,
       totalCount,
     });
+
+    /*Возвращаем ResultObject c преобразованными для пагинации данными по блогам.*/
+    return {
+      status: ResultStatuses.Ok,
+      data: { paginatedBlogsListOutput },
+      extensions: [],
+    };
   },
 
   /*Метод "findById()" для поиска данных по блогу по ID.*/
-  async findById(blogId: string): Promise<BlogOutputDTO> {
+  async findById(blogId: string): Promise<Result<{ blogOutput: BlogOutputDTO } | null>> {
     /*Просим query-репозиторий "blogsQueryRepository" найти данные по блогу по ID в БД.*/
     const blogDB = await blogsQueryRepository.findById(blogId);
-    /*Преобразовываем данные по блогу из БД в подготовленные для отправки клиенту данные. Знак "!" означает, что мы
-    гарантируем "blogDB" не null или undefined в этом месте.*/
-    return mapToBlogOutputDTO(blogDB!);
+
+    /*Если блог не был найден, то возвращаем ResultObject с информацией об этом.*/
+    if (!blogDB) {
+      return {
+        status: ResultStatuses.NotFound,
+        data: null,
+        errorMessage: 'Not Found',
+        extensions: [{ field: 'blogId', message: 'Not Found' }],
+      };
+    }
+
+    /*Если блог был найден, то преобразовываем данные по блогу из БД в подготовленные для отправки клиенту данные.*/
+    const blogOutput = mapToBlogOutputDTO(blogDB);
+
+    /*Возвращаем ResultObject c преобразованными данными по блогу.*/
+    return {
+      status: ResultStatuses.Ok,
+      data: { blogOutput },
+      extensions: [],
+    };
   },
 };

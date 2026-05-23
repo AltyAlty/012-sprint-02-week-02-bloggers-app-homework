@@ -3,7 +3,7 @@ import { body } from 'express-validator';
 /*Middleware "loginOrEmail" проверяет, что поле "login" является строкой.*/
 const loginOrEmailValidation = body('loginOrEmail')
   .isString()
-  .withMessage('loginOrEmail should be a string')
+  .withMessage('loginOrEmail must be a string')
   .trim()
   .isLength({ min: 1 })
   .withMessage('loginOrEmail is too short');
@@ -13,7 +13,7 @@ const loginOrEmailValidation = body('loginOrEmail')
 2. Состоит из не менее 6 и не более 20 символов.*/
 const passwordValidation = body('password')
   .isString()
-  .withMessage('password should be a string')
+  .withMessage('password must be a string')
   .trim()
   .isLength({ min: 6, max: 20 })
   .withMessage('password is too short or too long');

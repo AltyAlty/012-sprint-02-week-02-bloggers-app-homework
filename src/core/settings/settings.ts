@@ -17,4 +17,8 @@ export const SETTINGS = {
 
   BASIC_AUTH_ADMIN_USERNAME: process.env.BASIC_AUTH_ADMIN_USERNAME,
   BASIC_AUTH_ADMIN_PASSWORD: process.env.BASIC_AUTH_ADMIN_PASSWORD,
+
+  AC_SECRET: process.env.AC_SECRET,
+  AC_TIME: process.env.AC_TIME,
+  RT_SECRET: process.env.RT_SECRET,
 };

@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../../../core/types/http-statuses';
+import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { usersService } from '../../application/users.service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 
 /*Функция-обработчик "deleteUserByIdHandler()" для DELETE-запросов для удаления пользователя по ID при помощи
 URI-параметров.*/
@@ -10,9 +11,17 @@ export const deleteUserByIdHandler = async (req: Request<{ id: string }>, res: R
     /*Получаем ID пользователя.*/
     const userId = req.params.id;
     /*Просим сервис "usersService" удалить пользователя по ID.*/
-    await usersService.deleteById(userId);
-    /*Сообщаем клиенту, что пользователь был удален.*/
-    res.sendStatus(HttpStatus.NoContent_204);
+    const deletedUserResult = await usersService.deleteById(userId);
+    /*Получаем HTTP-статус операции по удалению пользователя по ID.*/
+    const deletedUserResultHttpStatus = mapResultCodeToHttpStatus(deletedUserResult.status);
+
+    /*Если пользователь не был удален, то сообщаем об этом клиенту.*/
+    if (deletedUserResultHttpStatus !== HttpStatuses.NoContent_204) {
+      return res.status(deletedUserResultHttpStatus).send(deletedUserResult.extensions);
+    }
+
+    /*Если пользователь был удален, то сообщаем клиенту об этом.*/
+    res.sendStatus(deletedUserResultHttpStatus);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

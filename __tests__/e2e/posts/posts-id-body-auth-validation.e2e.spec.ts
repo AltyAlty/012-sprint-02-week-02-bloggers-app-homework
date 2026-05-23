@@ -3,7 +3,7 @@ import express from 'express';
 import request from 'supertest';
 import { setupApp } from '../../../src/setup-app';
 import { generateBasicAuthToken } from '../../utils/auth/generate-admin-auth-token';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { clearDb } from '../../utils/db/clear-db';
 import { runDB, stopDb } from '../../../src/db/mongodb/mongo.db';
 import { SETTINGS } from '../../../src/core/settings/settings';
@@ -51,12 +51,12 @@ describe('Posts API ID, body and auth validation checks', () => {
     const incorrectQuery3 = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${incorrectSortDirection}&sortBy=${sortBy}`;
     const incorrectQuery4 = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${incorrectSortBy}`;
 
-    await request(app).get(incorrectQuery1).expect(HttpStatus.BadRequest_400);
-    await request(app).get(incorrectQuery2).expect(HttpStatus.BadRequest_400);
-    await request(app).get(incorrectQuery3).expect(HttpStatus.BadRequest_400);
-    await request(app).get(incorrectQuery4).expect(HttpStatus.BadRequest_400);
+    await request(app).get(incorrectQuery1).expect(HttpStatuses.BadRequest_400);
+    await request(app).get(incorrectQuery2).expect(HttpStatuses.BadRequest_400);
+    await request(app).get(incorrectQuery3).expect(HttpStatuses.BadRequest_400);
+    await request(app).get(incorrectQuery4).expect(HttpStatuses.BadRequest_400);
 
-    const getPostsListResponse = await request(app).get(correctQuery).expect(HttpStatus.Ok_200);
+    const getPostsListResponse = await request(app).get(correctQuery).expect(HttpStatuses.Ok_200);
     expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
     expect(getPostsListResponse.body.items.length).toBe(2);
     expect(getPostsListResponse.body.totalCount).toBe(2);
@@ -66,8 +66,8 @@ describe('Posts API ID, body and auth validation checks', () => {
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
     const correctCreatePostData: CreatePostInputDTO = getCreatePostInputDTO(createdBlogId);
-    await request(app).post(SETTINGS.POSTS_PATH).send(correctCreatePostData).expect(HttpStatus.Unauthorized_401);
-    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatus.Ok_200);
+    await request(app).post(SETTINGS.POSTS_PATH).send(correctCreatePostData).expect(HttpStatuses.Unauthorized_401);
+    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatuses.Ok_200);
     expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
     expect(getPostsListResponse.body.items.length).toBe(0);
     expect(getPostsListResponse.body.totalCount).toBe(0);
@@ -88,7 +88,7 @@ describe('Posts API ID, body and auth validation checks', () => {
         .post(SETTINGS.POSTS_PATH)
         .set('Authorization', adminToken)
         .send({ title, shortDescription, content, blogId })
-        .expect(HttpStatus.BadRequest_400);
+        .expect(HttpStatuses.BadRequest_400);
     };
 
     await checkPostCreating('');
@@ -105,7 +105,7 @@ describe('Posts API ID, body and auth validation checks', () => {
     await checkPostCreating(undefined, undefined, undefined, null);
     await checkPostCreating(undefined, undefined, undefined, '   ');
 
-    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatus.Ok_200);
+    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatuses.Ok_200);
     expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
     expect(getPostsListResponse.body.items.length).toBe(0);
     expect(getPostsListResponse.body.totalCount).toBe(0);
@@ -122,9 +122,9 @@ describe('Posts API ID, body and auth validation checks', () => {
     const incorrectURL2 = `${SETTINGS.POSTS_PATH}/${incorrectPostId2}`;
     const incorrectURL3 = `${SETTINGS.POSTS_PATH}/${incorrectPostId3}`;
 
-    await request(app).get(incorrectURL1).expect(HttpStatus.BadRequest_400);
-    await request(app).get(incorrectURL2).expect(HttpStatus.BadRequest_400);
-    await request(app).get(incorrectURL3).expect(HttpStatus.BadRequest_400);
+    await request(app).get(incorrectURL1).expect(HttpStatuses.BadRequest_400);
+    await request(app).get(incorrectURL2).expect(HttpStatuses.BadRequest_400);
+    await request(app).get(incorrectURL3).expect(HttpStatuses.BadRequest_400);
 
     const getPostByIdResponse = await getPostById(app, createdPostId);
     expect(getPostByIdResponse).toEqual({ ...createdPost });
@@ -140,7 +140,7 @@ describe('Posts API ID, body and auth validation checks', () => {
     await request(app)
       .put(`${SETTINGS.POSTS_PATH}/${createdPostId}`)
       .send(updatePostData)
-      .expect(HttpStatus.Unauthorized_401);
+      .expect(HttpStatuses.Unauthorized_401);
 
     const getPostByIdResponse = await getPostById(app, createdPostId);
 
@@ -174,7 +174,7 @@ describe('Posts API ID, body and auth validation checks', () => {
         .put(url)
         .set('Authorization', adminToken)
         .send(updatePostData)
-        .expect(HttpStatus.BadRequest_400);
+        .expect(HttpStatuses.BadRequest_400);
     };
 
     await checkPostUpdating(incorrectURL1);
@@ -212,7 +212,7 @@ describe('Posts API ID, body and auth validation checks', () => {
         .put(correctURL)
         .set('Authorization', adminToken)
         .send({ title, shortDescription, content, blogId })
-        .expect(HttpStatus.BadRequest_400);
+        .expect(HttpStatuses.BadRequest_400);
     };
 
     await checkPostUpdating('');
@@ -245,7 +245,7 @@ describe('Posts API ID, body and auth validation checks', () => {
   it('❌ 008 should not delete a post specified by ID without proper basic authorization; DELETE /api/posts/:id', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    await request(app).delete(`${SETTINGS.POSTS_PATH}/${createdPostId}`).expect(HttpStatus.Unauthorized_401);
+    await request(app).delete(`${SETTINGS.POSTS_PATH}/${createdPostId}`).expect(HttpStatuses.Unauthorized_401);
     const getPostByIdResponse = await getPostById(app, createdPostId);
     expect(getPostByIdResponse).toEqual({ ...createdPost });
   });
@@ -261,9 +261,9 @@ describe('Posts API ID, body and auth validation checks', () => {
     const incorrectURL2 = `${SETTINGS.POSTS_PATH}/${incorrectPostId2}`;
     const incorrectURL3 = `${SETTINGS.POSTS_PATH}/${incorrectPostId3}`;
 
-    await request(app).delete(incorrectURL1).set('Authorization', adminToken).expect(HttpStatus.BadRequest_400);
-    await request(app).delete(incorrectURL2).set('Authorization', adminToken).expect(HttpStatus.BadRequest_400);
-    await request(app).delete(incorrectURL3).set('Authorization', adminToken).expect(HttpStatus.BadRequest_400);
+    await request(app).delete(incorrectURL1).set('Authorization', adminToken).expect(HttpStatuses.BadRequest_400);
+    await request(app).delete(incorrectURL2).set('Authorization', adminToken).expect(HttpStatuses.BadRequest_400);
+    await request(app).delete(incorrectURL3).set('Authorization', adminToken).expect(HttpStatuses.BadRequest_400);
 
     const getPostByIdResponse = await getPostById(app, createdPostId);
     expect(getPostByIdResponse).toEqual({ ...createdPost });

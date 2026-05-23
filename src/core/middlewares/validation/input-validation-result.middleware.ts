@@ -2,7 +2,7 @@
 запроса.*/
 import { FieldValidationError, ValidationError, validationResult } from 'express-validator';
 import { NextFunction, Request, Response } from 'express';
-import { HttpStatus } from '../../types/http-statuses';
+import { HttpStatuses } from '../../types/http-statuses';
 import { ValidationErrorsListOutputDTO } from '../../types/validation/validation-errors-list.output-dto';
 import { ValidationErrorOutputDTO } from '../../types/validation/validation-error.output-dto';
 
@@ -28,7 +28,7 @@ export const inputValidationResultMiddleware = (req: Request<{}, {}, {}, {}>, re
 
   /*Если ошибки валидации были найдены, то сообщаем об этом клиенту.*/
   if (errors.length > 0) {
-    res.status(HttpStatus.BadRequest_400).json(createErrorMessages(errors));
+    res.status(HttpStatuses.BadRequest_400).json(createErrorMessages(errors));
     return;
   }
 

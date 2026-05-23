@@ -2,7 +2,6 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { UserType } from '../types/user.type';
 import { usersCollection } from '../../db/mongodb/mongo.db';
 import { GetUsersListQueryInputDTO } from '../routes/input-dto/get-users-list-query.input-dto';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 
 /*Query-репозиторий "usersQueryRepository" для работы с данными по пользователям в БД.*/
 export const usersQueryRepository = {
@@ -31,16 +30,16 @@ export const usersQueryRepository = {
     /*Просим коллекцию "usersCollection" подсчитать общее количество документов, подходящих под фильтр, без учета
     пагинации.*/
     const totalCount = await usersCollection.countDocuments(filter);
-    /*Возвращаем найденные данные по блогам.*/
+    /*Возвращаем найденные данные по пользователям.*/
     return { items, totalCount };
   },
 
   /*Метод "findById()" для поиска данных по пользователю по ID в БД.*/
-  async findById(userId: string): Promise<WithId<UserType>> {
+  async findById(userId: string): Promise<WithId<UserType> | null> {
     /*Просим коллекцию "usersCollection" найти данные по пользователю по ID в БД.*/
     const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    /*Если данные по пользователю не были найдены, то выкидываем ошибку.*/
-    if (!user) throw new RepositoryNotFoundError('User does not exist');
+    /*Если данные по пользователю не были найдены, то возвращаем null.*/
+    if (!user) return null;
     /*Если данные по пользователю были найдены, то возвращаем их.*/
     return user;
   },

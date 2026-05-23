@@ -2,7 +2,6 @@ import { GetBlogsListQueryInputDTO } from '../routes/input-dto/get-blogs-list-qu
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { BlogType } from '../types/blog.type';
 import { blogsCollection } from '../../db/mongodb/mongo.db';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 
 /*Query-репозиторий "blogsQueryRepository" для работы с данными по блогам в БД.*/
 export const blogsQueryRepository = {
@@ -42,11 +41,11 @@ export const blogsQueryRepository = {
   },
 
   /*Метод "findById()" для поиска данных по блогу по ID в БД.*/
-  async findById(blogId: string): Promise<WithId<BlogType>> {
+  async findById(blogId: string): Promise<WithId<BlogType> | null> {
     /*Просим коллекцию "blogsCollection" найти данные по блогу по ID в БД.*/
     const blog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
-    /*Если данные по блогу не были найдены, то выкидываем ошибку.*/
-    if (!blog) throw new RepositoryNotFoundError('Blog does not exist');
+    /*Если данные по блогу не были найдены, то возвращаем null.*/
+    if (!blog) return null;
     /*Если данные по блогу были найдены, то возвращаем их.*/
     return blog;
   },

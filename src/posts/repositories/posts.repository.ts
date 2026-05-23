@@ -1,7 +1,6 @@
 import { postsCollection } from '../../db/mongodb/mongo.db';
 import { PostType } from '../types/post.type';
 import { ObjectId, WithId } from 'mongodb';
-import { RepositoryNotFoundError } from '../../core/errors/repository-not-found.error';
 import { UpdatePostInputDTO } from '../routes/input-dto/update-post.input-dto';
 
 /*Репозиторий "postsRepository" для работы с данными по постам в БД.*/
@@ -25,7 +24,7 @@ export const postsRepository = {
   },
 
   /*Метод "updateById()" для изменения данных поста по ID в БД.*/
-  async updateById(postId: string, dto: UpdatePostInputDTO): Promise<void> {
+  async updateById(postId: string, dto: UpdatePostInputDTO): Promise<number> {
     /*Просим коллекцию "postsCollection" изменить данные поста по ID в БД.*/
     const updateResult = await postsCollection.updateOne(
       { _id: new ObjectId(postId) },
@@ -39,18 +38,16 @@ export const postsRepository = {
       }
     );
 
-    /*Если поста не был найден, то выкидываем ошибку с информацией об этом.*/
-    if (updateResult.matchedCount < 1) throw new RepositoryNotFoundError('Post does not exist');
-    return;
+    /*Возвращаем количество измененных постов.*/
+    return updateResult.matchedCount;
   },
 
   /*Метод "deleteById()" для удаления поста по ID в БД.*/
-  async deleteById(postId: string): Promise<void> {
+  async deleteById(postId: string): Promise<number> {
     /*Просим коллекцию "postsCollection" удалить пост по ID в БД.*/
     const deleteResult = await postsCollection.deleteOne({ _id: new ObjectId(postId) });
-    /*Если пост не был найден, то выкидываем ошибку с информацией об этом.*/
-    if (deleteResult.deletedCount < 1) throw new RepositoryNotFoundError('Post does not exist');
-    return;
+    /*Возвращаем количество удаленных постов.*/
+    return deleteResult.deletedCount;
   },
 
   /*Метод "deleteManyByIds()" для удаления нескольких постов по их ID в БД.*/

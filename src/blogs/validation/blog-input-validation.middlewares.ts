@@ -6,7 +6,7 @@ import { body } from 'express-validator';
 2. Состоит из не менее 1 и не более 15 символов.*/
 const nameValidation = body('name')
   .isString()
-  .withMessage('name should be a string')
+  .withMessage('name must be a string')
   .trim()
   .isLength({ min: 1, max: 15 })
   .withMessage('name is too short or too long');
@@ -16,7 +16,7 @@ const nameValidation = body('name')
 2. Состоит из не менее 1 и не более 500 символов.*/
 const descriptionValidation = body('description')
   .isString()
-  .withMessage('description should be a string')
+  .withMessage('description must be a string')
   .trim()
   .isLength({ min: 1, max: 500 })
   .withMessage('description is too short or too long');
@@ -27,7 +27,7 @@ const descriptionValidation = body('description')
 3. Соответствует регулярному выражению ^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$.*/
 const websiteUrlValidation = body('websiteUrl')
   .isString()
-  .withMessage('websiteUrl should be a string')
+  .withMessage('websiteUrl must be a string')
   .trim()
   .isLength({ min: 5, max: 100 })
   .withMessage('websiteUrl is too short or too long')

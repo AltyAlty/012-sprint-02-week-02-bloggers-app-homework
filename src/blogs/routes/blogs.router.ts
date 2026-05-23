@@ -7,7 +7,7 @@ import { deleteBlogByIdHandler } from './handlers/delete-blog-by-id.handler';
 import { blogIdValidation, idValidation } from '../../core/middlewares/validation/params-id-validation.middlewares';
 import { inputValidationResultMiddleware } from '../../core/middlewares/validation/input-validation-result.middleware';
 import { blogCreateInputValidation, blogUpdateInputValidation } from '../validation/blog-input-validation.middlewares';
-import { superAdminGuardMiddleware } from '../../auth/middlewares/super-admin.guard-middleware';
+import { basicAuthGuardMiddleware } from '../../auth/middlewares/guard-middlewares/basic-auth.guard-middleware';
 import { paginationValidationMiddleware } from '../../core/middlewares/validation/pagination-validation.middleware';
 import { getPostsListByBlogIdHandler } from './handlers/get-posts-list-by-blog-id.handler';
 import { BlogSortFieldInputDTO } from './input-dto/blog-sort-field.input-dto';
@@ -23,7 +23,7 @@ blogsRouter
   /*GET-запрос для получения данных по всем блогам с пагинацией при помощи query-параметров.*/
   .get('', paginationValidationMiddleware(BlogSortFieldInputDTO), inputValidationResultMiddleware, getBlogsListHandler)
   /*POST-запрос для добавления нового блога.*/
-  .post('', superAdminGuardMiddleware, blogCreateInputValidation, inputValidationResultMiddleware, createBlogHandler)
+  .post('', basicAuthGuardMiddleware, blogCreateInputValidation, inputValidationResultMiddleware, createBlogHandler)
   /*GET-запрос для получения данных по всем постам в существующем блоге по ID с пагинацией при помощи URI-параметров.*/
   .get(
     '/:blogId/posts',
@@ -35,7 +35,7 @@ blogsRouter
   /*POST-запрос для добавления нового поста в существующий блог по ID при помощи URI-параметров.*/
   .post(
     '/:blogId/posts',
-    superAdminGuardMiddleware,
+    basicAuthGuardMiddleware,
     blogIdValidation,
     postInExistingBlogCreateInputValidation,
     inputValidationResultMiddleware,
@@ -47,11 +47,11 @@ blogsRouter
   /*PUT-запрос для изменения данных блога по ID при помощи URI-параметров.*/
   .put(
     '/:id',
-    superAdminGuardMiddleware,
+    basicAuthGuardMiddleware,
     idValidation,
     blogUpdateInputValidation,
     inputValidationResultMiddleware,
     updateBlogByIdHandler
   )
   /*DELETE-запрос для удаления блога по ID при помощи URI-параметров.*/
-  .delete('/:id', superAdminGuardMiddleware, idValidation, inputValidationResultMiddleware, deleteBlogByIdHandler);
+  .delete('/:id', basicAuthGuardMiddleware, idValidation, inputValidationResultMiddleware, deleteBlogByIdHandler);

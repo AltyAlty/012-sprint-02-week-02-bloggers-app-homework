@@ -4,6 +4,7 @@ import { matchedData } from 'express-validator';
 import { GetBlogsListQueryInputDTO } from '../input-dto/get-blogs-list-query.input-dto';
 import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
 import { blogsQueryService } from '../../application/blogs.query-service';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 
 /*Функция-обработчик "getBlogsListHandler()" для GET-запросов для получения данных по всем блогам при помощи
 query-параметров.*/
@@ -23,9 +24,11 @@ export const getBlogsListHandler = async (req: Request<{}, {}, {}, GetBlogsListQ
     "defaultPaginationSettingsType".*/
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
     /*Просим query-сервис "blogsQueryService" найти данные по блогам.*/
-    const paginatedBlogsListOutput = await blogsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+    const paginatedBlogsListResult = await blogsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+    /*Получаем HTTP-статус операции по поиску данных по блогам.*/
+    const paginatedBlogsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedBlogsListResult.status);
     /*Отправляем данные по блогам клиенту.*/
-    res.send(paginatedBlogsListOutput);
+    res.status(paginatedBlogsListResultHttpStatus).send(paginatedBlogsListResult.data.paginatedBlogsListOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

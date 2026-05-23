@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import { HttpStatus } from '../../core/types/http-statuses';
-import { SETTINGS } from '../../core/settings/settings';
+import { HttpStatuses } from '../../../core/types/http-statuses';
+import { SETTINGS } from '../../../core/settings/settings';
 
-/*Middleware "superAdminGuardMiddleware" отвечает за базовую авторизацию в приложении.*/
-export const superAdminGuardMiddleware = (req: Request, res: Response, next: NextFunction) => {
+/*Middleware "basicAuthGuardMiddleware" отвечает за базовую авторизацию в приложении.*/
+export const basicAuthGuardMiddleware = (req: Request, res: Response, next: NextFunction) => {
   /*Получаем заголовок "Authorization" из запроса. Должно быть вида "Basic <base64-encoded-credentials>"*/
   const auth = req.headers['authorization'] as string;
 
   /*Если получить заголовок "Authorization" не удалось, то сообщаем об этом клиенту.*/
   if (!auth) {
-    res.sendStatus(HttpStatus.Unauthorized_401);
+    res.sendStatus(HttpStatuses.Unauthorized_401);
     return;
   }
 
@@ -18,7 +18,7 @@ export const superAdminGuardMiddleware = (req: Request, res: Response, next: Nex
 
   /*Если тип авторизации не "Basic", то сообщаем об этом клиенту.*/
   if (authType !== 'Basic') {
-    res.sendStatus(HttpStatus.Unauthorized_401);
+    res.sendStatus(HttpStatuses.Unauthorized_401);
     return;
   }
 
@@ -29,7 +29,7 @@ export const superAdminGuardMiddleware = (req: Request, res: Response, next: Nex
 
   /*Если логин и пароль не совпадают с заранее заданными значениями, то сообщаем об этом клиенту.*/
   if (username !== SETTINGS.BASIC_AUTH_ADMIN_USERNAME || password !== SETTINGS.BASIC_AUTH_ADMIN_PASSWORD) {
-    res.sendStatus(HttpStatus.Unauthorized_401);
+    res.sendStatus(HttpStatuses.Unauthorized_401);
     return;
   }
 

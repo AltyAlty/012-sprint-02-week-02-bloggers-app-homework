@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { HttpStatus } from '../../../src/core/types/http-statuses';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { Express } from 'express';
 import { generateBasicAuthToken } from '../auth/generate-admin-auth-token';
 import { getCreatePostInputDTO } from './get-create-post-input-dto';
@@ -21,7 +21,7 @@ export const createPost = async (
     .post(SETTINGS.POSTS_PATH)
     .set('Authorization', generateBasicAuthToken())
     .send(testCreatePostData)
-    .expect(HttpStatus.Created_201);
+    .expect(HttpStatuses.Created_201);
 
   return createPostResponse.body;
 };
