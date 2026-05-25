@@ -47,4 +47,14 @@ export const usersRepository = {
     /*Возвращаем количество удаленных пользователей.*/
     return deleteResult.deletedCount;
   },
+
+  /*Метод "findById()" для поиска данных по пользователю по ID в БД.*/
+  async findById(userId: string): Promise<WithId<UserType> | null> {
+    /*Просим коллекцию "usersCollection" найти данные по пользователю по ID в БД.*/
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    /*Если данные по пользователю не были найдены, то возвращаем null.*/
+    if (!user) return null;
+    /*Если данные по пользователю были найдены, то возвращаем их.*/
+    return user;
+  },
 };

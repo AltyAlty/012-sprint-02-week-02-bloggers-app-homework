@@ -3,10 +3,12 @@ import { SETTINGS } from '../../core/settings/settings';
 import { BlogType } from '../../blogs/types/blog.type';
 import { PostType } from '../../posts/types/post.type';
 import { UserType } from '../../users/types/user.type';
+import { CommentType } from '../../comments/types/comment.type';
 
 export let client: MongoClient;
 export let blogsCollection: Collection<BlogType>;
 export let postsCollection: Collection<PostType>;
+export let commentsCollection: Collection<CommentType>;
 export let usersCollection: Collection<UserType>;
 
 /*Функция "runDB()" для подключения к серверу MongoDB.*/
@@ -18,6 +20,7 @@ export const runDB = async (url: string, dbName: string): Promise<void> => {
   /*Создаем коллекции в указанной БД.*/
   blogsCollection = db.collection<BlogType>(SETTINGS.BLOGS_COLLECTION_NAME);
   postsCollection = db.collection<PostType>(SETTINGS.POSTS_COLLECTION_NAME);
+  commentsCollection = db.collection<CommentType>(SETTINGS.COMMENTS_COLLECTION_NAME);
   usersCollection = db.collection<UserType>(SETTINGS.USERS_COLLECTION_NAME);
 
   try {

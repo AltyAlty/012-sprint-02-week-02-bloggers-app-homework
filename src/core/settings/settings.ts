@@ -4,6 +4,7 @@ export const SETTINGS = {
 
   BLOGS_PATH: '/api/blogs',
   POSTS_PATH: '/api/posts',
+  COMMENTS_PATH: '/api/comments',
   USERS_PATH: '/api/users',
   AUTH_PATH: '/api/auth',
   TESTING_PATH: '/api/testing',
@@ -13,6 +14,7 @@ export const SETTINGS = {
 
   BLOGS_COLLECTION_NAME: 'blogs',
   POSTS_COLLECTION_NAME: 'posts',
+  COMMENTS_COLLECTION_NAME: 'comments',
   USERS_COLLECTION_NAME: 'users',
 
   BASIC_AUTH_ADMIN_USERNAME: process.env.BASIC_AUTH_ADMIN_USERNAME,

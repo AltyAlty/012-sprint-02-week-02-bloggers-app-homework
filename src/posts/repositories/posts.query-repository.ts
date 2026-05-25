@@ -2,13 +2,14 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { PostType } from '../types/post.type';
 import { postsCollection } from '../../db/mongodb/mongo.db';
 import { GetPostsListQueryInputDTO } from '../routes/input-dto/get-posts-list-query.input-dto';
+import { GetPostsListInExistingBlogQueryInputDTO } from '../routes/input-dto/get-posts-list-in-existing-blog-query.input-dto';
 
 /*Query-репозиторий "postsQueryRepository" для работы с данными по постам в БД.*/
 export const postsQueryRepository = {
   /*Метод "findManyByBlogId()" для поиска данных по всем постам в существующем блоге по ID в БД.*/
   async findManyByBlogId(
     blogId: string,
-    queryDTO: GetPostsListQueryInputDTO
+    queryDTO: GetPostsListInExistingBlogQueryInputDTO
   ): Promise<{ items: WithId<PostType>[]; totalCount: number }> {
     /*Создаем переменные на основе параметра "queryDTO" при помощи деструктуризации.*/
     const { pageNumber, pageSize, sortBy, sortDirection } = queryDTO;

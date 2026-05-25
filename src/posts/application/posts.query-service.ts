@@ -7,13 +7,14 @@ import { mapToPostOutputDTO } from '../repositories/mappers/map-to-post-output-d
 import { PostOutputDTO } from '../routes/output-dto/post.output-dto';
 import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { Result } from '../../core/types/result/result.type';
+import { GetPostsListInExistingBlogQueryInputDTO } from '../routes/input-dto/get-posts-list-in-existing-blog-query.input-dto';
 
 /*Query-сервис "postsQueryService" для работы с данными по постам.*/
 export const postsQueryService = {
   /*Метод "findManyByBlogId()" для поиска данных по всем постам в существующем блоге по ID.*/
   async findManyByBlogId(
     blogId: string,
-    queryDTO: GetPostsListQueryInputDTO
+    queryDTO: GetPostsListInExistingBlogQueryInputDTO
   ): Promise<Result<{ paginatedPostsListOutput: PaginatedPostsListOutputDTO } | null>> {
     /*Просим репозиторий "blogsRepository" проверить по ID существует ли блог в БД.*/
     const blogDB = await blogsRepository.findById(blogId);

@@ -7,6 +7,7 @@ import { postsRouter } from './posts/routes/posts.router';
 import { testingRouter } from './testing/routes/testing.router';
 import { usersRouter } from './users/routes/users.router';
 import { authRouter } from './auth/routes/auth.router';
+import { commentsRouter } from './comments/routes/comments.router';
 
 /*Функция "setupApp()" для конфигурирования экземпляров приложения Express.*/
 export const setupApp = async (app: Express) => {
@@ -17,6 +18,7 @@ export const setupApp = async (app: Express) => {
   /*Подключаем роутеры.*/
   app.use(SETTINGS.BLOGS_PATH, blogsRouter);
   app.use(SETTINGS.POSTS_PATH, postsRouter);
+  app.use(SETTINGS.COMMENTS_PATH, commentsRouter);
   app.use(SETTINGS.USERS_PATH, usersRouter);
   app.use(SETTINGS.AUTH_PATH, authRouter);
   app.use(SETTINGS.TESTING_PATH, testingRouter);

@@ -25,7 +25,7 @@ export const authService = {
     }
 
     /*Если проверка прошла успешно, то просим адаптер "jwtService" создать AT.*/
-    const accessToken = await jwtService.createToken(result.data!._id.toString());
+    const accessToken = await jwtService.createToken(result.data!.user._id.toString());
 
     /*Возвращаем ResultObject с AT.*/
     return {
@@ -36,7 +36,10 @@ export const authService = {
   },
 
   /*Метод "checkUserCredentials()" для проверки подлинности логина/email и пароля пользователя.*/
-  async checkUserCredentials(loginOrEmail: string, password: string): Promise<Result<WithId<UserType> | null>> {
+  async checkUserCredentials(
+    loginOrEmail: string,
+    password: string
+  ): Promise<Result<{ user: WithId<UserType> } | null>> {
     /*Просим репозиторий "usersRepository" найти пользователя по логину/email в БД.*/
     const user = await usersRepository.findByLoginOrEmail(loginOrEmail);
 
@@ -68,7 +71,7 @@ export const authService = {
     /*Если с учетными данными нет проблем, то возвращаем ResultObject с информацией об этом.*/
     return {
       status: ResultStatuses.Ok,
-      data: user,
+      data: { user },
       extensions: [],
     };
   },

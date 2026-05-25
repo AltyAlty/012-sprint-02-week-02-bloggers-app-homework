@@ -30,3 +30,18 @@ export const blogIdValidation = param('blogId')
   .withMessage('blogId must not be empty')
   .isMongoId()
   .withMessage('Incorrect format of ObjectId');
+
+/*Middleware "postIdValidation" проверяет, что поле "postId":
+1. Существует в запросе.
+2. Является строкой.
+3. Не является пустым.
+4. Является типа ObjectId.*/
+export const postIdValidation = param('postId')
+  .exists()
+  .withMessage('postId is required')
+  .isString()
+  .withMessage('postId must be a string')
+  .isLength({ min: 1 })
+  .withMessage('postId must not be empty')
+  .isMongoId()
+  .withMessage('Incorrect format of ObjectId');

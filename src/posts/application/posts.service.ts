@@ -7,6 +7,7 @@ import { UpdatePostInputDTO } from '../routes/input-dto/update-post.input-dto';
 import { blogsRepository } from '../../blogs/repositories/blogs.repository';
 import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { Result } from '../../core/types/result/result.type';
+import { commentsService } from '../../comments/application/comments.service';
 
 /*Сервис "postsService" для работы с данными по постам.*/
 export const postsService = {
@@ -123,6 +124,28 @@ export const postsService = {
 
   /*Метод "deleteById()" для удаления поста по ID.*/
   async deleteById(postId: string): Promise<Result<{} | null>> {
+    /*Просим репозиторий "postsRepository" проверить по ID существует ли пост в БД.*/
+    const postDB = await postsRepository.findById(postId);
+
+    /*Если пост не был найден, то возвращаем ResultObject с информацией об этом.*/
+    if (!postDB) {
+      return {
+        status: ResultStatuses.NotFound,
+        data: null,
+        errorMessage: 'Not Found',
+        extensions: [{ field: 'postId', message: 'Not Found' }],
+      };
+    }
+
+    /*Если пост был найден, то просим сервис "commentsService" узнать нет ли у этого поста комментариев.*/
+    const commentsResult = await commentsService.findAllByPostId(postId);
+
+    /*Если комментарии в посте были найдены, то просим сервис "commentsService" удалить их.*/
+    if (commentsResult.data.commentsDB) {
+      const commentsIds: ObjectId[] = commentsResult.data.commentsDB!.map(comment => comment._id);
+      await commentsService.deleteManyByIds(commentsIds);
+    }
+
     /*Просим репозиторий "postsRepository" удалить пост по ID в БД.*/
     const deletedPostResult = await postsRepository.deleteById(postId);
 

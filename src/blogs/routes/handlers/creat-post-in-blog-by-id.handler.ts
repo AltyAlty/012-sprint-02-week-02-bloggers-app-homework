@@ -6,7 +6,7 @@ import { postsQueryService } from '../../../posts/application/posts.query-servic
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 
-/*Функция-обработчик "createPostInExistingBlogByIdHandler()" для POST-запросов для добавления нового постав в
+/*Функция-обработчик "createPostInExistingBlogByIdHandler()" для POST-запросов для добавления нового поста в
 существующий блог по ID при помощи URI-параметров.*/
 export const createPostInExistingBlogByIdHandler = async (
   req: Request<{ blogId: string }, {}, CreatePostInExistingBlogInputDTO>,

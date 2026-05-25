@@ -57,4 +57,14 @@ export const postsRepository = {
     /*Возвращаем количество удаленных постов.*/
     return result.deletedCount;
   },
+
+  /*Метод "findById()" для поиска поста по ID в БД.*/
+  async findById(postId: string): Promise<WithId<PostType> | null> {
+    /*Просим коллекцию "postsCollection" найти данные по посту по ID в БД.*/
+    const post = await postsCollection.findOne({ _id: new ObjectId(postId) });
+    /*Если данные по посту не были найдены, то возвращаем null.*/
+    if (!post) return null;
+    /*Если данные по посту были найдены, то возвращаем их.*/
+    return post;
+  },
 };
