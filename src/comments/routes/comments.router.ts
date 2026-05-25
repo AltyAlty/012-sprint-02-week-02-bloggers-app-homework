@@ -8,7 +8,7 @@ import { updateCommentByIdHandler } from './handlers/update-comment-by-id.handle
 import { deleteCommentByIdHandler } from './handlers/delete-comment-by-id.handler';
 
 /*Роутер из Express для работы с данными по комментариям.*/
-export const commentsRouter = Router({});
+export const commentsRouter: Router = Router({});
 
 /*Конфигурируем роутер "commentsRouter".*/
 commentsRouter

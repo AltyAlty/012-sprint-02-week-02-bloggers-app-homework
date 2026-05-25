@@ -3,16 +3,17 @@ import { errorsHandler } from '../../../core/errors/errors.handler';
 import { blogsService } from '../../application/blogs.service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
 /*Функция-обработчик "deleteBlogByIdHandler()" для DELETE-запросов для удаления блога по ID при помощи URI-параметров.*/
-export const deleteBlogByIdHandler = async (req: Request<{ id: string }>, res: Response) => {
+export const deleteBlogByIdHandler = async (req: Request<{ id: string }>, res: Response<void | ExtensionType[]>) => {
   try {
     /*Получаем ID блога.*/
-    const blogId = req.params.id;
+    const blogId: string = req.params.id;
     /*Просим сервис "blogsService" удалить блог по ID.*/
-    const deletedBlogResult = await blogsService.deleteById(blogId);
+    const deletedBlogResult: Result<{} | null> = await blogsService.deleteById(blogId);
     /*Получаем HTTP-статус операции по удалению блога по ID.*/
-    const deletedBlogResultHttpStatus = mapResultCodeToHttpStatus(deletedBlogResult.status);
+    const deletedBlogResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(deletedBlogResult.status);
 
     /*Если блог не был удален, то сообщаем об этом клиенту.*/
     if (deletedBlogResultHttpStatus !== HttpStatuses.NoContent_204) {

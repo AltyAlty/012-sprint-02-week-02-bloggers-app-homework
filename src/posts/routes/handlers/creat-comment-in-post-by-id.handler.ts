@@ -5,22 +5,30 @@ import { commentsService } from '../../../comments/application/comments.service'
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { commentsQueryService } from '../../../comments/application/comments.query-service';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
+import { CommentOutputDTO } from '../../../comments/routes/output-dto/comment.output-dto';
 
 /*Функция-обработчик "createCommentInExistingPostByIdHandler()" для POST-запросов для добавления нового комментария в
 существующий пост по ID при помощи URI-параметров.*/
 export const createCommentInExistingPostByIdHandler = async (
   req: Request<{ postId: string }, {}, CreateCommentInExistingPostInputDTO>,
-  res: Response
+  res: Response<CommentOutputDTO | ExtensionType[]>
 ) => {
   try {
     /*Получаем ID поста.*/
-    const postId = req.params.postId;
+    const postId: string = req.params.postId;
     /*Получаем ID пользователя.*/
-    const userId = req.userId?.id as string;
+    const userId: string = req.userId?.id as string;
+
     /*Просим сервис "commentsService" создать комментарий в существующем посте.*/
-    const createdCommentResult = await commentsService.createInExistingPost(postId, userId, req.body);
+    const createdCommentResult: Result<{ commentId: string } | null> = await commentsService.createInExistingPost(
+      postId,
+      userId,
+      req.body
+    );
+
     /*Получаем HTTP-статус операции по созданию комментария в существующем посте.*/
-    const createdCommentResultHttpStatus = mapResultCodeToHttpStatus(createdCommentResult.status);
+    const createdCommentResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(createdCommentResult.status);
 
     /*Если комментарий не был создан, то сообщаем об этом клиенту.*/
     if (createdCommentResultHttpStatus !== HttpStatuses.Created_201) {
@@ -29,9 +37,12 @@ export const createCommentInExistingPostByIdHandler = async (
 
     /*Если комментарий был создан, то просим query-сервис "commentsQueryService" найти данные по созданному комментарию
     по ID.*/
-    const commentResult = await commentsQueryService.findById(createdCommentResult.data!.commentId);
+    const commentResult: Result<{ commentOutput: CommentOutputDTO } | null> = await commentsQueryService.findById(
+      createdCommentResult.data!.commentId
+    );
+
     /*Получаем HTTP-статус операции по поиску данных по созданному комментарию по ID.*/
-    const commentResultHttpStatus = mapResultCodeToHttpStatus(commentResult.status);
+    const commentResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(commentResult.status);
 
     /*Если данные по созданному комментарию не были найдены, то сообщаем об этом клиенту.*/
     if (commentResultHttpStatus !== HttpStatuses.Ok_200) {

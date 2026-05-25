@@ -5,10 +5,16 @@ import { GetBlogsListQueryInputDTO } from '../input-dto/get-blogs-list-query.inp
 import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
 import { blogsQueryService } from '../../application/blogs.query-service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { PaginatedBlogsListOutputDTO } from '../output-dto/paginated-blogs-list.output-dto';
+import { HttpStatuses } from '../../../core/types/http-statuses';
+import { Result } from '../../../core/types/result/result.type';
 
 /*Функция-обработчик "getBlogsListHandler()" для GET-запросов для получения данных по всем блогам при помощи
 query-параметров.*/
-export const getBlogsListHandler = async (req: Request<{}, {}, {}, GetBlogsListQueryInputDTO>, res: Response) => {
+export const getBlogsListHandler = async (
+  req: Request<{}, {}, {}, GetBlogsListQueryInputDTO>,
+  res: Response<PaginatedBlogsListOutputDTO>
+) => {
   try {
     /*Функция "matchedData()" из библиотеки express-validator берет из объекта "req" только те поля, которые ранее
     прошли через валидаторы и санитайзеры на основе библиотеки express-validator.*/
@@ -23,10 +29,13 @@ export const getBlogsListHandler = async (req: Request<{}, {}, {}, GetBlogsListQ
     /*Добавляем к объекту с query-параметрами поля, чтобы этот объект соответствовал типу
     "defaultPaginationSettingsType".*/
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
+
     /*Просим query-сервис "blogsQueryService" найти данные по блогам.*/
-    const paginatedBlogsListResult = await blogsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+    const paginatedBlogsListResult: Result<{ paginatedBlogsListOutput: PaginatedBlogsListOutputDTO }> =
+      await blogsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+
     /*Получаем HTTP-статус операции по поиску данных по блогам.*/
-    const paginatedBlogsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedBlogsListResult.status);
+    const paginatedBlogsListResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(paginatedBlogsListResult.status);
     /*Отправляем данные по блогам клиенту.*/
     res.status(paginatedBlogsListResultHttpStatus).send(paginatedBlogsListResult.data.paginatedBlogsListOutput);
   } catch (error: unknown) {

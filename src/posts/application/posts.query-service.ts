@@ -8,6 +8,9 @@ import { PostOutputDTO } from '../routes/output-dto/post.output-dto';
 import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { Result } from '../../core/types/result/result.type';
 import { GetPostsListInExistingBlogQueryInputDTO } from '../routes/input-dto/get-posts-list-in-existing-blog-query.input-dto';
+import { WithId } from 'mongodb';
+import { BlogType } from '../../blogs/types/blog.type';
+import { PostType } from '../types/post.type';
 
 /*Query-сервис "postsQueryService" для работы с данными по постам.*/
 export const postsQueryService = {
@@ -17,7 +20,7 @@ export const postsQueryService = {
     queryDTO: GetPostsListInExistingBlogQueryInputDTO
   ): Promise<Result<{ paginatedPostsListOutput: PaginatedPostsListOutputDTO } | null>> {
     /*Просим репозиторий "blogsRepository" проверить по ID существует ли блог в БД.*/
-    const blogDB = await blogsRepository.findById(blogId);
+    const blogDB: WithId<BlogType> | null = await blogsRepository.findById(blogId);
 
     /*Если блог не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!blogDB) {
@@ -31,10 +34,11 @@ export const postsQueryService = {
 
     /*Если блог был найден, то просим query-репозиторий "postsQueryRepository" найти данные по постам в существующем
     блоге по ID в БД.*/
-    const { items, totalCount } = await postsQueryRepository.findManyByBlogId(blogId, queryDTO);
+    const { items, totalCount }: { items: WithId<PostType>[]; totalCount: number } =
+      await postsQueryRepository.findManyByBlogId(blogId, queryDTO);
 
     /*Преобразовываем данные по постам из БД в подготовленные для пагинации данные.*/
-    const paginatedPostsListOutput = mapToPaginatedPostsListOutputDTO(items, {
+    const paginatedPostsListOutput: PaginatedPostsListOutputDTO = mapToPaginatedPostsListOutputDTO(items, {
       pageNumber: queryDTO.pageNumber,
       pageSize: queryDTO.pageSize,
       totalCount,
@@ -51,7 +55,7 @@ export const postsQueryService = {
   /*Метод "findById()" для поиска данных по посту по ID.*/
   async findById(postId: string): Promise<Result<{ postOutput: PostOutputDTO } | null>> {
     /*Просим query-репозиторий "postsQueryRepository" найти данные по посту по ID в БД.*/
-    const postDB = await postsQueryRepository.findById(postId);
+    const postDB: WithId<PostType> | null = await postsQueryRepository.findById(postId);
 
     /*Если пост не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!postDB) {
@@ -64,7 +68,7 @@ export const postsQueryService = {
     }
 
     /*Если пост был найден, то преобразовываем данные по посту из БД в подготовленные для отправки клиенту данные.*/
-    const postOutput = mapToPostOutputDTO(postDB);
+    const postOutput: PostOutputDTO = mapToPostOutputDTO(postDB);
 
     /*Возвращаем ResultObject c преобразованными данными по посту.*/
     return {
@@ -79,10 +83,11 @@ export const postsQueryService = {
     queryDTO: GetPostsListQueryInputDTO
   ): Promise<Result<{ paginatedPostsListOutput: PaginatedPostsListOutputDTO }>> {
     /*Просим query-репозиторий "postsQueryRepository" найти данные по постам в БД.*/
-    const { items, totalCount } = await postsQueryRepository.findMany(queryDTO);
+    const { items, totalCount }: { items: WithId<PostType>[]; totalCount: number } =
+      await postsQueryRepository.findMany(queryDTO);
 
     /*Преобразовываем данные по постам из БД в подготовленные для пагинации данные.*/
-    const paginatedPostsListOutput = mapToPaginatedPostsListOutputDTO(items, {
+    const paginatedPostsListOutput: PaginatedPostsListOutputDTO = mapToPaginatedPostsListOutputDTO(items, {
       pageNumber: queryDTO.pageNumber,
       pageSize: queryDTO.pageSize,
       totalCount,

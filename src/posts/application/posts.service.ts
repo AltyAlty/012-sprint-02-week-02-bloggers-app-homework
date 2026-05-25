@@ -8,13 +8,15 @@ import { blogsRepository } from '../../blogs/repositories/blogs.repository';
 import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { Result } from '../../core/types/result/result.type';
 import { commentsService } from '../../comments/application/comments.service';
+import { BlogType } from '../../blogs/types/blog.type';
+import { CommentType } from '../../comments/types/comment.type';
 
 /*Сервис "postsService" для работы с данными по постам.*/
 export const postsService = {
   /*Метод "findAllByBlogId()" для поиска всех постов в блоге по ID.*/
   async findAllByBlogId(blogId: string): Promise<Result<{ postsDB: WithId<PostType>[] | null }>> {
     /*Просим репозиторий "postsRepository" найти все посты в блоге по ID в БД.*/
-    const postsDB = await postsRepository.findAllByBlogId(blogId);
+    const postsDB: WithId<PostType>[] | null = await postsRepository.findAllByBlogId(blogId);
 
     /*Возвращаем ResultObject c данными по постам.*/
     return {
@@ -27,7 +29,7 @@ export const postsService = {
   /*Метод "create()" для добавления нового поста.*/
   async create(dto: CreatePostInputDTO): Promise<Result<{ postId: string } | null>> {
     /*Просим репозиторий "blogsRepository" проверить по ID существует ли блог в БД.*/
-    const blogDB = await blogsRepository.findById(dto.blogId);
+    const blogDB: WithId<BlogType> | null = await blogsRepository.findById(dto.blogId);
 
     /*Если блог не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!blogDB) {
@@ -50,7 +52,7 @@ export const postsService = {
     };
 
     /*Просим репозиторий "postsRepository" создать новый пост в БД.*/
-    const postId = await postsRepository.create(newPost);
+    const postId: string = await postsRepository.create(newPost);
 
     /*Возвращаем ResultObject c ID поста.*/
     return {
@@ -66,7 +68,7 @@ export const postsService = {
     dto: CreatePostInExistingBlogInputDTO
   ): Promise<Result<{ postId: string } | null>> {
     /*Просим репозиторий "blogsRepository" проверить по ID существует ли блог в БД.*/
-    const blogDB = await blogsRepository.findById(blogId);
+    const blogDB: WithId<BlogType> | null = await blogsRepository.findById(blogId);
 
     /*Если блог не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!blogDB) {
@@ -89,7 +91,7 @@ export const postsService = {
     };
 
     /*Просим репозиторий "postsRepository" создать новый пост в БД.*/
-    const postId = await postsRepository.create(newPost);
+    const postId: string = await postsRepository.create(newPost);
 
     /*Возвращаем ResultObject c ID поста.*/
     return {
@@ -102,7 +104,7 @@ export const postsService = {
   /*Метод "updateById()" для изменения данных поста по ID.*/
   async updateById(postId: string, dto: UpdatePostInputDTO): Promise<Result<{} | null>> {
     /*Просим репозиторий "postsRepository" изменить данные поста по ID в БД.*/
-    const updatedPostResult = await postsRepository.updateById(postId, dto);
+    const updatedPostResult: number = await postsRepository.updateById(postId, dto);
 
     /*Если пост не был изменен, то возвращаем ResultObject с информацией об этом.*/
     if (updatedPostResult < 1) {
@@ -125,7 +127,7 @@ export const postsService = {
   /*Метод "deleteById()" для удаления поста по ID.*/
   async deleteById(postId: string): Promise<Result<{} | null>> {
     /*Просим репозиторий "postsRepository" проверить по ID существует ли пост в БД.*/
-    const postDB = await postsRepository.findById(postId);
+    const postDB: WithId<PostType> | null = await postsRepository.findById(postId);
 
     /*Если пост не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!postDB) {
@@ -138,7 +140,8 @@ export const postsService = {
     }
 
     /*Если пост был найден, то просим сервис "commentsService" узнать нет ли у этого поста комментариев.*/
-    const commentsResult = await commentsService.findAllByPostId(postId);
+    const commentsResult: Result<{ commentsDB: WithId<CommentType>[] | null }> =
+      await commentsService.findAllByPostId(postId);
 
     /*Если комментарии в посте были найдены, то просим сервис "commentsService" удалить их.*/
     if (commentsResult.data.commentsDB) {
@@ -147,7 +150,7 @@ export const postsService = {
     }
 
     /*Просим репозиторий "postsRepository" удалить пост по ID в БД.*/
-    const deletedPostResult = await postsRepository.deleteById(postId);
+    const deletedPostResult: number = await postsRepository.deleteById(postId);
 
     /*Если пост не был удален, то возвращаем ResultObject с информацией об этом.*/
     if (deletedPostResult < 1) {
@@ -170,7 +173,7 @@ export const postsService = {
   /*Метод "deleteManyByIds()" для удаления нескольких постов по их ID.*/
   async deleteManyByIds(postsIds: ObjectId[]): Promise<Result<{ deletedPostsResult: number }>> {
     /*Просим репозиторий "postsRepository" удалить несколько постов по их ID в БД.*/
-    const deletedPostsResult = await postsRepository.deleteManyByIds(postsIds);
+    const deletedPostsResult: number = await postsRepository.deleteManyByIds(postsIds);
 
     /*Возвращаем ResultObject c информацией о количестве удаленных постов.*/
     return {

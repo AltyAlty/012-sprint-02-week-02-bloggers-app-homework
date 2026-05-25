@@ -6,16 +6,18 @@ import { GetPostsListInExistingBlogQueryInputDTO } from '../../../posts/routes/i
 import { postsQueryService } from '../../../posts/application/posts.query-service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
+import { PaginatedPostsListOutputDTO } from '../../../posts/routes/output-dto/paginated-posts-list.output-dto';
 
 /*Функция-обработчик "getPostsListByBlogIdHandler()" для GET-запросов для получения данных по всем постам в существующем
 блоге по ID с пагинацией при помощи URI-параметров.*/
 export const getPostsListByBlogIdHandler = async (
   req: Request<{ blogId: string }, {}, {}, GetPostsListInExistingBlogQueryInputDTO>,
-  res: Response
+  res: Response<PaginatedPostsListOutputDTO | ExtensionType[]>
 ) => {
   try {
     /*Получаем ID блога.*/
-    const blogId = req.params.blogId;
+    const blogId: string = req.params.blogId;
 
     /*Функция "matchedData()" из библиотеки express-validator берет из объекта "req" только те поля, которые ранее
     прошли через валидаторы и санитайзеры на основе библиотеки express-validator.*/
@@ -32,13 +34,11 @@ export const getPostsListByBlogIdHandler = async (
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
 
     /*Просим query-сервис "postsQueryService" найти данные по постам в существующем блоге по ID.*/
-    const paginatedPostsListResult = await postsQueryService.findManyByBlogId(
-      blogId,
-      sanitizedQueryInputWithDefaultPaginationSettings
-    );
+    const paginatedPostsListResult: Result<{ paginatedPostsListOutput: PaginatedPostsListOutputDTO } | null> =
+      await postsQueryService.findManyByBlogId(blogId, sanitizedQueryInputWithDefaultPaginationSettings);
 
     /*Получаем HTTP-статус операции по поиску постов в существующем блоге по ID.*/
-    const paginatedPostsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedPostsListResult.status);
+    const paginatedPostsListResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(paginatedPostsListResult.status);
 
     /*Если данные по постам не были найдены, то сообщаем об этом клиенту.*/
     if (paginatedPostsListResultHttpStatus !== HttpStatuses.Ok_200) {

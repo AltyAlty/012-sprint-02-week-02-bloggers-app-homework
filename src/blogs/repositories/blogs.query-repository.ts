@@ -2,16 +2,31 @@ import { GetBlogsListQueryInputDTO } from '../routes/input-dto/get-blogs-list-qu
 import { Filter, ObjectId, WithId } from 'mongodb';
 import { BlogType } from '../types/blog.type';
 import { blogsCollection } from '../../db/mongodb/mongo.db';
+import { BlogSortFieldInputDTO } from '../routes/input-dto/blog-sort-field.input-dto';
+import { SortDirection } from '../../core/types/pagination/sort-direction';
 
 /*Query-репозиторий "blogsQueryRepository" для работы с данными по блогам в БД.*/
 export const blogsQueryRepository = {
   /*Метод "findMany()" для поиска данных по блогам в БД.*/
   async findMany(queryDTO: GetBlogsListQueryInputDTO): Promise<{ items: WithId<BlogType>[]; totalCount: number }> {
     /*Создаем переменные на основе параметра "queryDTO" при помощи деструктуризации.*/
-    const { pageNumber, pageSize, sortBy, sortDirection, searchNameTerm } = queryDTO;
+    const {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDirection,
+      searchNameTerm,
+    }: {
+      pageNumber: number;
+      pageSize: number;
+      sortBy: BlogSortFieldInputDTO;
+      sortDirection: SortDirection;
+      searchNameTerm?: string | undefined;
+    } = queryDTO;
+
     /*Переменная "skip" обозначает сколько записей надо пропустить перед тем, как начать отдавать запрошенную страницу
     "pageNumber".*/
-    const skip = (pageNumber - 1) * pageSize;
+    const skip: number = (pageNumber - 1) * pageSize;
     /*Динамически собираем фильтр для поиска в MongoDB. Начинаем с пустого фильтра.*/
     const filter: Filter<BlogType> = {};
     /*Если в query-параметрах было указано имя блога, то добавляем условие по полю "name".
@@ -26,7 +41,7 @@ export const blogsQueryRepository = {
     3. ".skip(skip)": пропускаем нужное количество записей, чтобы взять записи для запрошенной страницы.
     4. ".limit(pageSize)": берем записей не больше размера запрошенной страницы.
     5. ".toArray()": превращаем курсор в обычный массив и возвращаем его.*/
-    const items = await blogsCollection
+    const items: WithId<BlogType>[] = await blogsCollection
       .find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
@@ -35,7 +50,7 @@ export const blogsQueryRepository = {
 
     /*Просим коллекцию "blogsCollection" подсчитать общее количество документов, подходящих под фильтр, без учета
     пагинации.*/
-    const totalCount = await blogsCollection.countDocuments(filter);
+    const totalCount: number = await blogsCollection.countDocuments(filter);
     /*Возвращаем найденные данные по блогам.*/
     return { items, totalCount };
   },
@@ -43,7 +58,7 @@ export const blogsQueryRepository = {
   /*Метод "findById()" для поиска данных по блогу по ID в БД.*/
   async findById(blogId: string): Promise<WithId<BlogType> | null> {
     /*Просим коллекцию "blogsCollection" найти данные по блогу по ID в БД.*/
-    const blog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
+    const blog: WithId<BlogType> | null = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
     /*Если данные по блогу не были найдены, то возвращаем null.*/
     if (!blog) return null;
     /*Если данные по блогу были найдены, то возвращаем их.*/

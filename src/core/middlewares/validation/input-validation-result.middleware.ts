@@ -14,7 +14,7 @@ export const createErrorMessages = (errors: ValidationErrorOutputDTO[]): Validat
 /*Функция "mapToValidationErrorOutputDTO()" преобразовывает валидационные ошибки из библиотеки express-validator в
 формат DTO для сообщений об ошибках валидации, отправляемых клиенту.*/
 const mapToValidationErrorOutputDTO = (error: ValidationError): ValidationErrorOutputDTO => {
-  const expressError = error as unknown as FieldValidationError;
+  const expressError: FieldValidationError = error as unknown as FieldValidationError;
   return { field: expressError.path, message: expressError.msg };
 };
 
@@ -24,7 +24,9 @@ export const inputValidationResultMiddleware = (req: Request<{}, {}, {}, {}>, re
   добавляется в объект запроса. Поэтому пытаемся здесь извлечь такие ошибки. Далее форматируем ошибки валидации при
   помощи функции "mapToValidationErrorOutputDTO()". Затем возвращаем массив, где для каждого поля оставляется только
   первая ошибка.*/
-  const errors = validationResult(req).formatWith(mapToValidationErrorOutputDTO).array({ onlyFirstError: true });
+  const errors: ValidationErrorOutputDTO[] = validationResult(req)
+    .formatWith(mapToValidationErrorOutputDTO)
+    .array({ onlyFirstError: true });
 
   /*Если ошибки валидации были найдены, то сообщаем об этом клиенту.*/
   if (errors.length > 0) {

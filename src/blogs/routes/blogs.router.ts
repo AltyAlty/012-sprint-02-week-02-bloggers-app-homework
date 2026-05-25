@@ -16,7 +16,7 @@ import { createPostInExistingBlogByIdHandler } from './handlers/creat-post-in-bl
 import { PostSortFieldInputDTO } from '../../posts/routes/input-dto/post-sort-field.input-dto';
 
 /*Роутер из Express для работы с данными по блогам.*/
-export const blogsRouter = Router({});
+export const blogsRouter: Router = Router({});
 
 /*Конфигурируем роутер "blogsRouter".*/
 blogsRouter

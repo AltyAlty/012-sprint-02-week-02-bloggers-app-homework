@@ -4,7 +4,7 @@ import { Algorithm, Version } from '@node-rs/argon2';
 /*Адаптер "argon2Service" для работы с библиотекой @node-rs/argon2.*/
 export const argon2Service = {
   /*Метод "generateHash()" для генерации хеша для паролей.*/
-  async generateHash(password: string) {
+  async generateHash(password: string): Promise<string> {
     return argon2.hash(password, {
       memoryCost: 65536,
       timeCost: 3,
@@ -16,7 +16,7 @@ export const argon2Service = {
   },
 
   /*Метод "checkPassword()" для проверки подлинности пароля по хэшу.*/
-  async checkPassword(password: string, hash: string) {
+  async checkPassword(password: string, hash: string): Promise<boolean> {
     return argon2.verify(hash, password);
   },
 };

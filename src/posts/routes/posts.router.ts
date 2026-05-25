@@ -17,7 +17,7 @@ import { commentInExistingPostCreateInputValidation } from '../../comments/valid
 import { createCommentInExistingPostByIdHandler } from './handlers/creat-comment-in-post-by-id.handler';
 
 /*Роутер из Express для работы с данными по постам.*/
-export const postsRouter = Router({});
+export const postsRouter: Router = Router({});
 
 /*Конфигурируем роутер "postsRouter".*/
 postsRouter

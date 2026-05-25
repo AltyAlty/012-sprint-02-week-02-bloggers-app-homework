@@ -5,18 +5,27 @@ import { CreateUserInputDTO } from '../input-dto/create-user.input-dto';
 import { usersService } from '../../application/users.service';
 import { usersQueryService } from '../../application/users.query-service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
+import { UserOutputDTO } from '../output-dto/user.output-dto';
 
 /*Функция-обработчик "createUserHandler()" для POST-запросов для добавления нового пользователя.*/
-export const createUserHandler = async (req: Request<{}, {}, CreateUserInputDTO>, res: Response) => {
+export const createUserHandler = async (
+  req: Request<{}, {}, CreateUserInputDTO>,
+  res: Response<UserOutputDTO | ExtensionType[]>
+) => {
   try {
     /*Просим сервис "usersService" создать нового пользователя.*/
-    const createdUserResult = await usersService.create(req.body);
+    const createdUserResult: Result<{ userId: string }> = await usersService.create(req.body);
     /*Получаем HTTP-статус операции по созданию нового пользователя.*/
-    const createdUserResultHttpStatus = mapResultCodeToHttpStatus(createdUserResult.status);
+    const createdUserResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(createdUserResult.status);
+
     /*Просим query-сервис "usersQueryService" найти данные по созданному пользователю по ID.*/
-    const userResult = await usersQueryService.findById(createdUserResult.data.userId);
+    const userResult: Result<{ userOutput: UserOutputDTO } | null> = await usersQueryService.findById(
+      createdUserResult.data.userId
+    );
+
     /*Получаем HTTP-статус операции по поиску данных по созданному пользователю по ID.*/
-    const userResultHttpStatus = mapResultCodeToHttpStatus(userResult.status);
+    const userResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(userResult.status);
 
     /*Если данные по созданному пользователю не были найдены, то сообщаем об этом клиенту.*/
     if (userResultHttpStatus !== HttpStatuses.Ok_200) {

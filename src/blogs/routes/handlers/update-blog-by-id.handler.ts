@@ -4,17 +4,21 @@ import { UpdateBlogInputDTO } from '../input-dto/update-blog.input-dto';
 import { blogsService } from '../../application/blogs.service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
 /*Функция-обработчик "updateBlogByIdHandler()" для PUT-запросов для изменения данных блога по ID при помощи
 URI-параметров.*/
-export const updateBlogByIdHandler = async (req: Request<{ id: string }, {}, UpdateBlogInputDTO>, res: Response) => {
+export const updateBlogByIdHandler = async (
+  req: Request<{ id: string }, {}, UpdateBlogInputDTO>,
+  res: Response<void | ExtensionType[]>
+) => {
   try {
     /*Получаем ID блога.*/
-    const blogId = req.params.id;
+    const blogId: string = req.params.id;
     /*Просим сервис "blogsService" изменить данные блога по ID.*/
-    const updatedBlogResult = await blogsService.updateById(blogId, req.body);
+    const updatedBlogResult: Result<{} | null> = await blogsService.updateById(blogId, req.body);
     /*Получаем HTTP-статус операции по изменению данных блога по ID.*/
-    const updatedBlogResultHttpStatus = mapResultCodeToHttpStatus(updatedBlogResult.status);
+    const updatedBlogResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(updatedBlogResult.status);
 
     /*Если блог не был изменен, то сообщаем об этом клиенту.*/
     if (updatedBlogResultHttpStatus !== HttpStatuses.NoContent_204) {

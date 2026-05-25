@@ -5,10 +5,16 @@ import { GetPostsListQueryInputDTO } from '../input-dto/get-posts-list-query.inp
 import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
 import { postsQueryService } from '../../application/posts.query-service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { PaginatedPostsListOutputDTO } from '../output-dto/paginated-posts-list.output-dto';
+import { Result } from '../../../core/types/result/result.type';
+import { HttpStatuses } from '../../../core/types/http-statuses';
 
 /*Функция-обработчик "getPostsListHandler()" для GET-запросов для получения данных по всем постам при помощи
 query-параметров.*/
-export const getPostsListHandler = async (req: Request<{}, {}, {}, GetPostsListQueryInputDTO>, res: Response) => {
+export const getPostsListHandler = async (
+  req: Request<{}, {}, {}, GetPostsListQueryInputDTO>,
+  res: Response<PaginatedPostsListOutputDTO>
+) => {
   try {
     /*Функция "matchedData()" из библиотеки express-validator берет из объекта "req" только те поля, которые ранее
     прошли через валидаторы и санитайзеры на основе библиотеки express-validator.*/
@@ -23,10 +29,13 @@ export const getPostsListHandler = async (req: Request<{}, {}, {}, GetPostsListQ
     /*Добавляем к объекту с query-параметрами поля, чтобы этот объект соответствовал типу
     "defaultPaginationSettingsType".*/
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
+
     /*Просим query-сервис "postsQueryService" найти данные по постам.*/
-    const paginatedPostsListResult = await postsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+    const paginatedPostsListResult: Result<{ paginatedPostsListOutput: PaginatedPostsListOutputDTO }> =
+      await postsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
+
     /*Получаем HTTP-статус операции по поиску данных по постам.*/
-    const paginatedPostsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedPostsListResult.status);
+    const paginatedPostsListResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(paginatedPostsListResult.status);
     /*Отправляем данные по постам клиенту.*/
     res.status(paginatedPostsListResultHttpStatus).send(paginatedPostsListResult.data.paginatedPostsListOutput);
   } catch (error: unknown) {

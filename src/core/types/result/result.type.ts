@@ -1,7 +1,7 @@
 import { ResultStatuses } from './result-statuses';
 
 /*Тип для поля "ExtensionType" в ResultObject.*/
-type ExtensionType = {
+export type ExtensionType = {
   field: string | null;
   message: string;
 };

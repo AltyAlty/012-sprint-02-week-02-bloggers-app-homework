@@ -6,7 +6,7 @@ import { accessTokenGuardMiddleware } from '../middlewares/guard-middlewares/acc
 import { getAuthDataByTokenHandler } from './handlers/get-auth-data-by-token.handler';
 
 /*Роутер из Express для работы с аутентификацией.*/
-export const authRouter = Router({});
+export const authRouter: Router = Router({});
 /*Конфигурируем роутер "authRouter".*/
 authRouter
   /*POST-запрос для аутентификации пользователя по логину или email.*/

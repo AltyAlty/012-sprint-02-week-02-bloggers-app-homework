@@ -6,16 +6,18 @@ import { commentsQueryService } from '../../../comments/application/comments.que
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
+import { PaginatedCommentsListOutputDTO } from '../../../comments/routes/output-dto/paginated-comments-list.output-dto';
 
 /*Функция-обработчик "getCommentsListByBlogIdHandler()" для GET-запросов для получения данных по всем комментариям в
 существующем посте по ID с пагинацией при помощи URI-параметров.*/
 export const getCommentsListByBlogIdHandler = async (
   req: Request<{ postId: string }, {}, {}, GetCommentsListInExistingPostQueryInputDTO>,
-  res: Response
+  res: Response<PaginatedCommentsListOutputDTO | ExtensionType[]>
 ) => {
   try {
     /*Получаем ID поста.*/
-    const postId = req.params.postId;
+    const postId: string = req.params.postId;
 
     /*Функция "matchedData()" из библиотеки express-validator берет из объекта "req" только те поля, которые ранее
     прошли через валидаторы и санитайзеры на основе библиотеки express-validator.*/
@@ -32,13 +34,13 @@ export const getCommentsListByBlogIdHandler = async (
     const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
 
     /*Просим query-сервис "commentsQueryService" найти данные по комментариям в существующем посте по ID.*/
-    const paginatedCommentsListResult = await commentsQueryService.findManyByPostId(
-      postId,
-      sanitizedQueryInputWithDefaultPaginationSettings
-    );
+    const paginatedCommentsListResult: Result<{ paginatedCommentsListOutput: PaginatedCommentsListOutputDTO } | null> =
+      await commentsQueryService.findManyByPostId(postId, sanitizedQueryInputWithDefaultPaginationSettings);
 
     /*Получаем HTTP-статус операции по поиску комментариев в существующем посте по ID.*/
-    const paginatedCommentsListResultHttpStatus = mapResultCodeToHttpStatus(paginatedCommentsListResult.status);
+    const paginatedCommentsListResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(
+      paginatedCommentsListResult.status
+    );
 
     /*Если данные по комментариям не были найдены, то сообщаем об этом клиенту.*/
     if (paginatedCommentsListResultHttpStatus !== HttpStatuses.Ok_200) {

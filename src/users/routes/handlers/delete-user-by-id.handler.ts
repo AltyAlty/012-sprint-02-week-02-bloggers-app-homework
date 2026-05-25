@@ -3,17 +3,18 @@ import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { usersService } from '../../application/users.service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
 /*Функция-обработчик "deleteUserByIdHandler()" для DELETE-запросов для удаления пользователя по ID при помощи
 URI-параметров.*/
-export const deleteUserByIdHandler = async (req: Request<{ id: string }>, res: Response) => {
+export const deleteUserByIdHandler = async (req: Request<{ id: string }>, res: Response<void | ExtensionType[]>) => {
   try {
     /*Получаем ID пользователя.*/
-    const userId = req.params.id;
+    const userId: string = req.params.id;
     /*Просим сервис "usersService" удалить пользователя по ID.*/
-    const deletedUserResult = await usersService.deleteById(userId);
+    const deletedUserResult: Result<{} | null> = await usersService.deleteById(userId);
     /*Получаем HTTP-статус операции по удалению пользователя по ID.*/
-    const deletedUserResultHttpStatus = mapResultCodeToHttpStatus(deletedUserResult.status);
+    const deletedUserResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(deletedUserResult.status);
 
     /*Если пользователь не был удален, то сообщаем об этом клиенту.*/
     if (deletedUserResultHttpStatus !== HttpStatuses.NoContent_204) {

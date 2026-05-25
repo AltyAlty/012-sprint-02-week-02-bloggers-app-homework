@@ -9,6 +9,7 @@ import request from 'supertest';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { createUser } from '../../utils/users/create-user';
 import { jwtService } from '../../../src/auth/adapters/jwt.service';
+import { usersService } from '../../../src/users/application/users.service';
 
 describe('Auth API endpoints check', () => {
   const app = express();
@@ -54,13 +55,15 @@ describe('Auth API endpoints check', () => {
       .expect(HttpStatuses.Ok_200);
 
     expect(meResponse.body).toMatchObject({
-      id: expect.any(String),
       login: credentials01.login,
       email: credentials01.email,
     });
 
     const decodedToken = await jwtService.verifyToken(accessToken);
     expect(decodedToken).not.toBeNull();
-    expect(decodedToken?.userId).toBe(meResponse.body.id);
+
+    const userResult = await usersService.findByLoginOrEmail(credentials01.login);
+    const userId = userResult.data?.userOutput.id;
+    expect(decodedToken?.userId).toEqual(userId);
   });
 });

@@ -2,16 +2,33 @@ import { Filter, ObjectId, WithId } from 'mongodb';
 import { UserType } from '../types/user.type';
 import { usersCollection } from '../../db/mongodb/mongo.db';
 import { GetUsersListQueryInputDTO } from '../routes/input-dto/get-users-list-query.input-dto';
+import { SortDirection } from '../../core/types/pagination/sort-direction';
+import { UserSortFieldInputDTO } from '../routes/input-dto/user-sort-field.input-dto';
 
 /*Query-репозиторий "usersQueryRepository" для работы с данными по пользователям в БД.*/
 export const usersQueryRepository = {
   /*Метод "findMany()" для поиска данных по пользователям в БД.*/
   async findMany(queryDTO: GetUsersListQueryInputDTO): Promise<{ items: WithId<UserType>[]; totalCount: number }> {
     /*Создаем переменные на основе параметра "queryDTO" при помощи деструктуризации.*/
-    const { pageNumber, pageSize, sortBy, sortDirection, searchLoginTerm, searchEmailTerm } = queryDTO;
+    const {
+      pageNumber,
+      pageSize,
+      sortBy,
+      sortDirection,
+      searchLoginTerm,
+      searchEmailTerm,
+    }: {
+      pageNumber: number;
+      pageSize: number;
+      sortBy: UserSortFieldInputDTO;
+      sortDirection: SortDirection;
+      searchLoginTerm?: string | undefined;
+      searchEmailTerm?: string | undefined;
+    } = queryDTO;
+
     /*Переменная "skip" обозначает сколько записей надо пропустить перед тем, как начать отдавать запрошенную страницу
     "pageNumber".*/
-    const skip = (pageNumber - 1) * pageSize;
+    const skip: number = (pageNumber - 1) * pageSize;
     /*Динамически собираем фильтр для поиска в MongoDB. В итоге фильтр будет работать так: для получения пользователя
     нужно совпадение хотя бы по одному полю в фильтре, а не по всем сразу.*/
     const conditions: Filter<UserType>[] = [];
@@ -20,7 +37,7 @@ export const usersQueryRepository = {
     const filter: Filter<UserType> = conditions.length > 0 ? { $or: conditions } : {};
 
     /*Просим коллекцию "usersCollection" найти данные по пользователям в БД.*/
-    const items = await usersCollection
+    const items: WithId<UserType>[] = await usersCollection
       .find(filter)
       .sort({ [sortBy]: sortDirection })
       .skip(skip)
@@ -29,7 +46,7 @@ export const usersQueryRepository = {
 
     /*Просим коллекцию "usersCollection" подсчитать общее количество документов, подходящих под фильтр, без учета
     пагинации.*/
-    const totalCount = await usersCollection.countDocuments(filter);
+    const totalCount: number = await usersCollection.countDocuments(filter);
     /*Возвращаем найденные данные по пользователям.*/
     return { items, totalCount };
   },
@@ -37,7 +54,7 @@ export const usersQueryRepository = {
   /*Метод "findById()" для поиска данных по пользователю по ID в БД.*/
   async findById(userId: string): Promise<WithId<UserType> | null> {
     /*Просим коллекцию "usersCollection" найти данные по пользователю по ID в БД.*/
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(userId) });
     /*Если данные по пользователю не были найдены, то возвращаем null.*/
     if (!user) return null;
     /*Если данные по пользователю были найдены, то возвращаем их.*/

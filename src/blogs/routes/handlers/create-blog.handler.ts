@@ -5,18 +5,27 @@ import { CreateBlogInputDTO } from '../input-dto/create-blog.input-dto';
 import { blogsQueryService } from '../../application/blogs.query-service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
+import { BlogOutputDTO } from '../output-dto/blog.output-dto';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
 /*Функция-обработчик "createBlogHandler()" для POST-запросов для добавления нового блога.*/
-export const createBlogHandler = async (req: Request<{}, {}, CreateBlogInputDTO>, res: Response) => {
+export const createBlogHandler = async (
+  req: Request<{}, {}, CreateBlogInputDTO>,
+  res: Response<BlogOutputDTO | ExtensionType[]>
+) => {
   try {
     /*Просим сервис "blogsService" создать новый блог.*/
-    const createdBlogResult = await blogsService.create(req.body);
+    const createdBlogResult: Result<{ blogId: string }> = await blogsService.create(req.body);
     /*Получаем HTTP-статус операции по созданию нового блога.*/
-    const createdBlogResultHttpStatus = mapResultCodeToHttpStatus(createdBlogResult.status);
+    const createdBlogResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(createdBlogResult.status);
+
     /*Просим query-сервис "blogsQueryService" найти данные по созданному блогу по ID.*/
-    const blogResult = await blogsQueryService.findById(createdBlogResult.data.blogId);
+    const blogResult: Result<{ blogOutput: BlogOutputDTO } | null> = await blogsQueryService.findById(
+      createdBlogResult.data.blogId
+    );
+
     /*Получаем HTTP-статус операции по поиску данных по созданному блогу по ID.*/
-    const blogResultHttpStatus = mapResultCodeToHttpStatus(blogResult.status);
+    const blogResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(blogResult.status);
 
     /*Если данные по созданному блогу не были найдены, то сообщаем об этом клиенту.*/
     if (blogResultHttpStatus !== HttpStatuses.Ok_200) {

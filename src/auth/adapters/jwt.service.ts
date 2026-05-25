@@ -6,7 +6,7 @@ export const jwtService = {
   /*Метод "createToken()" для создания JWT.*/
   async createToken(userId: any): Promise<string> {
     return new Promise((resolve, reject) => {
-      const onSignComplete = (error: Error | null, token: string | undefined) => {
+      const onSignComplete = (error: Error | null, token: string | undefined): void => {
         if (error) {
           reject(error);
         } else {
@@ -31,7 +31,7 @@ export const jwtService = {
   /*Метод "verifyToken()" для верификации JWT.*/
   async verifyToken(token: string): Promise<{ userId: string } | null> {
     return new Promise(resolve => {
-      const onVerifyComplete = (error: Error | null, decoded: unknown) => {
+      const onVerifyComplete = (error: Error | null, decoded: unknown): void => {
         if (error) {
           console.log('Token verification error');
           console.log(error);

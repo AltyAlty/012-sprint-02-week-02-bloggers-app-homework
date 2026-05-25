@@ -12,10 +12,13 @@ export const authService = {
   /*Метод "loginUser()" для аутентификации пользователя по логину/email и паролю.*/
   async loginUser(loginOrEmail: string, password: string): Promise<Result<{ accessToken: string } | null>> {
     /*Просим сервис "authService" проверить подлинность логина/email и пароля пользователя.*/
-    const result = await this.checkUserCredentials(loginOrEmail, password);
+    const checkedUserCredentialsResult: Result<{ user: WithId<UserType> } | null> = await this.checkUserCredentials(
+      loginOrEmail,
+      password
+    );
 
     /*Если проверка прошла неуспешно, то формируем ResultObject с информацией об этом.*/
-    if (result.status !== ResultStatuses.Ok) {
+    if (checkedUserCredentialsResult.status !== ResultStatuses.Ok) {
       return {
         status: ResultStatuses.Unauthorized,
         errorMessage: 'Unauthorized',
@@ -25,7 +28,7 @@ export const authService = {
     }
 
     /*Если проверка прошла успешно, то просим адаптер "jwtService" создать AT.*/
-    const accessToken = await jwtService.createToken(result.data!.user._id.toString());
+    const accessToken: string = await jwtService.createToken(checkedUserCredentialsResult.data!.user._id.toString());
 
     /*Возвращаем ResultObject с AT.*/
     return {
@@ -41,7 +44,7 @@ export const authService = {
     password: string
   ): Promise<Result<{ user: WithId<UserType> } | null>> {
     /*Просим репозиторий "usersRepository" найти пользователя по логину/email в БД.*/
-    const user = await usersRepository.findByLoginOrEmail(loginOrEmail);
+    const user: WithId<UserType> | null = await usersRepository.findByLoginOrEmail(loginOrEmail);
 
     /*Если пользователь не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!user) {

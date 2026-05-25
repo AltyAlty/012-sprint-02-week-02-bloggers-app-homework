@@ -1,22 +1,18 @@
 import { query } from 'express-validator';
 import { SortDirection } from '../../types/pagination/sort-direction';
 import { defaultPaginationSettingsType } from '../../types/pagination/default-pagination-settings.type';
-
-/*Дефолтный номер начальной страницы при пагинации.*/
-const DEFAULT_PAGE_NUMBER = 1;
-/*Дефолтный размер одной страницы при пагинации.*/
-const DEFAULT_PAGE_SIZE = 10;
-/*Дефолтный тип сортировки при пагинации.*/
-const DEFAULT_SORT_DIRECTION = SortDirection.Desc;
-/*Дефолтное свойство, по которому будет осуществлена сортировка при пагинации.*/
-const DEFAULT_SORT_BY = 'createdAt';
+import { SETTINGS } from '../../settings/settings';
 
 /*Объект с дефолтными настройками для пагинации.*/
 export const defaultPaginationSettings: defaultPaginationSettingsType<string> = {
-  pageNumber: DEFAULT_PAGE_NUMBER,
-  pageSize: DEFAULT_PAGE_SIZE,
-  sortBy: DEFAULT_SORT_BY,
-  sortDirection: DEFAULT_SORT_DIRECTION,
+  /*Дефолтный номер начальной страницы при пагинации.*/
+  pageNumber: SETTINGS.DEFAULT_PAGINATION_PAGE_NUMBER,
+  /*Дефолтный размер одной страницы при пагинации.*/
+  pageSize: SETTINGS.DEFAULT_PAGINATION_PAGE_SIZE,
+  /*Дефолтный тип сортировки при пагинации.*/
+  sortBy: SETTINGS.DEFAULT_PAGINATION_SORT_BY,
+  /*Дефолтное свойство, по которому будет осуществлена сортировка при пагинации.*/
+  sortDirection: SETTINGS.DEFAULT_PAGINATION_SORT_DIRECTION,
 };
 
 /*Middleware "paginationValidationMiddleware" валидирует query-параметры, касающиеся пагинации:
@@ -34,19 +30,19 @@ export const defaultPaginationSettings: defaultPaginationSettingsType<string> = 
 export const paginationValidationMiddleware = <T extends string>(sortFieldsEnum: Record<string, T>) => {
   /*Берем все значения из объекта "sortFieldsEnum" и формируем из них массив, обозначающий список полей, по которым
   разрешена сортировка.*/
-  const allowedSortFields = Object.values(sortFieldsEnum);
+  const allowedSortFields: string[] = Object.values(sortFieldsEnum);
 
   return [
     query('pageNumber')
       /*Подставляем дефолтное значение, если параметр в запросе отсутствует.*/
-      .default(DEFAULT_PAGE_NUMBER)
+      .default(SETTINGS.DEFAULT_PAGINATION_PAGE_NUMBER)
       .isInt({ min: 1 })
       .withMessage('Page number must be a positive integer')
       /*Преобразовываем строку в целое число.*/
       .toInt(),
 
     query('pageSize')
-      .default(DEFAULT_PAGE_SIZE)
+      .default(SETTINGS.DEFAULT_PAGINATION_PAGE_SIZE)
       .isInt({ min: 1, max: 100 })
       .withMessage('Page size must be between 1 and 100')
       .toInt(),
@@ -58,7 +54,7 @@ export const paginationValidationMiddleware = <T extends string>(sortFieldsEnum:
       .withMessage(`Invalid sort field. Allowed values: ${allowedSortFields.join(', ')}`),
 
     query('sortDirection')
-      .default(DEFAULT_SORT_DIRECTION)
+      .default(SETTINGS.DEFAULT_PAGINATION_SORT_DIRECTION)
       .isIn(Object.values(SortDirection))
       .withMessage(`Sort direction must be one of: ${Object.values(SortDirection).join(', ')}`),
 

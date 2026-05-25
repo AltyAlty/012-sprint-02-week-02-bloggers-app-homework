@@ -10,7 +10,7 @@ import { deleteUserByIdHandler } from './handlers/delete-user-by-id.handler';
 import { userCreateInputValidation } from '../validation/user-input-validation.middlewares';
 
 /*Роутер из Express для работы с данными по пользователям.*/
-export const usersRouter = Router({});
+export const usersRouter: Router = Router({});
 /*Применяем middleware "basicAuthGuardMiddleware" ко всем маршрутам.*/
 usersRouter.use(basicAuthGuardMiddleware);
 

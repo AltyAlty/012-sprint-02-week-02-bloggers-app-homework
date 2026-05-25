@@ -8,16 +8,16 @@ export const accessTokenGuardMiddleware = async (req: Request, res: Response, ne
   /*Если в заголовках запроса нет заголовка "authorization", то сообщаем об отказе в аутентификации.*/
   if (!req.headers.authorization) return res.sendStatus(HttpStatuses.Unauthorized_401);
   /*Если в заголовках запроса есть заголовок "authorization", то получаем из него тип авторизации и токен.*/
-  const [authType, token] = req.headers.authorization.split(' ');
+  const [authType, token]: string[] = req.headers.authorization.split(' ');
   /*Если тип авторизации не "Bearer", то сообщаем об отказе в аутентификации.*/
   if (authType !== 'Bearer') return res.sendStatus(HttpStatuses.Unauthorized_401);
   /*Если тип авторизации "Bearer", то просим адаптер "jwtService" верифицировать токен.*/
-  const payload = await jwtService.verifyToken(token);
+  const payload: { userId: string } | null = await jwtService.verifyToken(token);
 
   /*Если верификация токена прошла успешно, то извлекаем ID пользователя и прикрепляем его к запросу. После чего
   разрешаем дальнейшее выполнение запроса при помощи функции "next()".*/
   if (payload) {
-    const { userId } = payload;
+    const { userId }: { userId: string } = payload;
     req.userId = { id: userId } as IdType;
     next();
     return;

@@ -7,13 +7,15 @@ import { postsRepository } from '../../posts/repositories/posts.repository';
 import { CommentType } from '../types/comment.type';
 import { usersRepository } from '../../users/repositories/users.repository';
 import { ObjectId, WithId } from 'mongodb';
+import { UserType } from '../../users/types/user.type';
+import { PostType } from '../../posts/types/post.type';
 
 /*Сервис "commentsService" для работы с данными по комментариям.*/
 export const commentsService = {
   /*Метод "updateById()" для изменения данных комментария по ID.*/
   async updateById(commentId: string, userId: string, dto: UpdateCommentInputDTO): Promise<Result<{} | null>> {
     /*Просим репозиторий "commentsRepository" проверить по ID существует ли комментарий в БД.*/
-    const commentDB = await commentsRepository.findById(commentId);
+    const commentDB: WithId<CommentType> | null = await commentsRepository.findById(commentId);
 
     /*Если комментарий не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!commentDB) {
@@ -38,7 +40,7 @@ export const commentsService = {
 
     /*Если пользователь является автором комментария, то просим репозиторий "commentsRepository" изменить данные
     комментария по ID в БД.*/
-    const updatedCommentResult = await commentsRepository.updateById(commentId, dto);
+    const updatedCommentResult: number = await commentsRepository.updateById(commentId, dto);
 
     /*Если комментарий не был изменен, то возвращаем ResultObject с информацией об этом.*/
     if (updatedCommentResult < 1) {
@@ -61,7 +63,7 @@ export const commentsService = {
   /*Метод "deleteById()" для удаления комментария по ID.*/
   async deleteById(commentId: string, userId: string): Promise<Result<{} | null>> {
     /*Просим репозиторий "commentsRepository" проверить по ID существует ли комментарий в БД.*/
-    const commentDB = await commentsRepository.findById(commentId);
+    const commentDB: WithId<CommentType> | null = await commentsRepository.findById(commentId);
 
     /*Если комментарий не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!commentDB) {
@@ -86,7 +88,7 @@ export const commentsService = {
 
     /*Если пользователь является автором комментария, то просим репозиторий "commentsRepository" удалить комментарий по
     ID в БД.*/
-    const deletedPostResult = await commentsRepository.deleteById(commentId);
+    const deletedPostResult: number = await commentsRepository.deleteById(commentId);
 
     /*Если комментарий не был удален, то возвращаем ResultObject с информацией об этом.*/
     if (deletedPostResult < 1) {
@@ -113,7 +115,7 @@ export const commentsService = {
     dto: CreateCommentInExistingPostInputDTO
   ): Promise<Result<{ commentId: string } | null>> {
     /*Просим репозиторий "usersRepository" проверить по ID существует ли пользователь в БД.*/
-    const userDB = await usersRepository.findById(userId);
+    const userDB: WithId<UserType> | null = await usersRepository.findById(userId);
 
     /*Если пользователь не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!userDB) {
@@ -126,7 +128,7 @@ export const commentsService = {
     }
 
     /*Просим репозиторий "postsRepository" проверить по ID существует ли пост в БД.*/
-    const postDB = await postsRepository.findById(postId);
+    const postDB: WithId<PostType> | null = await postsRepository.findById(postId);
 
     /*Если пост не был найден, то возвращаем ResultObject с информацией об этом.*/
     if (!postDB) {
@@ -147,7 +149,7 @@ export const commentsService = {
     };
 
     /*Просим репозиторий "commentsRepository" создать новый комментарий в БД.*/
-    const commentId = await commentsRepository.create(newComment);
+    const commentId: string = await commentsRepository.create(newComment);
 
     /*Возвращаем ResultObject c ID комментария.*/
     return {
@@ -160,7 +162,7 @@ export const commentsService = {
   /*Метод "findAllByPostId()" для поиска всех комментариев в посте по ID.*/
   async findAllByPostId(postId: string): Promise<Result<{ commentsDB: WithId<CommentType>[] | null }>> {
     /*Просим репозиторий "commentsRepository" найти все комментарии в посте по ID в БД.*/
-    const commentsDB = await commentsRepository.findAllByPostId(postId);
+    const commentsDB: WithId<CommentType>[] | null = await commentsRepository.findAllByPostId(postId);
 
     /*Возвращаем ResultObject c данными по комментариям.*/
     return {
@@ -173,7 +175,7 @@ export const commentsService = {
   /*Метод "deleteManyByIds()" для удаления нескольких комментариев по их ID.*/
   async deleteManyByIds(commentsIds: ObjectId[]): Promise<Result<{ deletedCommentsResult: number }>> {
     /*Просим репозиторий "commentsRepository" удалить несколько комментариев по их ID в БД.*/
-    const deletedCommentsResult = await commentsRepository.deleteManyByIds(commentsIds);
+    const deletedCommentsResult: number = await commentsRepository.deleteManyByIds(commentsIds);
 
     /*Возвращаем ResultObject c информацией о количестве удаленных комментариев.*/
     return {

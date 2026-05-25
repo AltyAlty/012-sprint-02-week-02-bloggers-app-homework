@@ -11,7 +11,7 @@ import { defaultPaginationSettingsType } from '../../types/pagination/default-pa
 3. ": defaultPaginationSettingsType<P>": на выходе функция возвращает полный объект типа
 "defaultPaginationSettingsType".*/
 export const applyDefaultPaginationSettings = <P = string>(
-  query: Partial<defaultPaginationSettingsType<P>>,
+  query: Partial<defaultPaginationSettingsType<P>>
 ): defaultPaginationSettingsType<P> => {
   return {
     ...defaultPaginationSettings,

@@ -3,6 +3,8 @@ import { errorsHandler } from '../../../core/errors/errors.handler';
 import { blogsQueryService } from '../../application/blogs.query-service';
 import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
 import { HttpStatuses } from '../../../core/types/http-statuses';
+import { ExtensionType, Result } from '../../../core/types/result/result.type';
+import { BlogOutputDTO } from '../output-dto/blog.output-dto';
 
 /*"Request" из Express используется для типизации параметра "req", а "Response" из Express используется для типизации
 параметра "res".
@@ -15,14 +17,17 @@ import { HttpStatuses } from '../../../core/types/http-statuses';
 4. На четвертом месте в типе идут Query-параметры.
 
 Функция-обработчик "getBlogByIdHandler()" для GET-запросов для поиска блога по ID при помощи URI-параметров.*/
-export const getBlogByIdHandler = async (req: Request<{ id: string }>, res: Response) => {
+export const getBlogByIdHandler = async (
+  req: Request<{ id: string }>,
+  res: Response<BlogOutputDTO | ExtensionType[]>
+) => {
   try {
     /*Получаем ID блога.*/
-    const blogId = req.params.id;
+    const blogId: string = req.params.id;
     /*Просим query-сервис "blogsQueryService" найти данные по блогу по ID.*/
-    const blogResult = await blogsQueryService.findById(blogId);
+    const blogResult: Result<{ blogOutput: BlogOutputDTO } | null> = await blogsQueryService.findById(blogId);
     /*Получаем HTTP-статус операции по поиску данных по блогу по ID.*/
-    const blogResultHttpStatus = mapResultCodeToHttpStatus(blogResult.status);
+    const blogResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(blogResult.status);
 
     /*Если данные по блогу не были найдены, то сообщаем об этом клиенту.*/
     if (blogResultHttpStatus !== HttpStatuses.Ok_200) {
