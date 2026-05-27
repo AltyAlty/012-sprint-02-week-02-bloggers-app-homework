@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { blogsService } from '../../application/blogs.service';
-import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/map-result-code-to-http-status';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
-/*Функция-обработчик "deleteBlogByIdHandler()" для DELETE-запросов для удаления блога по ID при помощи URI-параметров.*/
+/*Функция-обработчик "deleteBlogByIdHandler()" для DELETE-запросов по удалению блога по ID, используя URI-параметры.*/
 export const deleteBlogByIdHandler = async (req: Request<{ id: string }>, res: Response<void | ExtensionType[]>) => {
   try {
     /*Получаем ID блога.*/
@@ -20,7 +20,7 @@ export const deleteBlogByIdHandler = async (req: Request<{ id: string }>, res: R
       return res.status(deletedBlogResultHttpStatus).send(deletedBlogResult.extensions);
     }
 
-    /*Если блог был удален, то сообщаем клиенту об этом.*/
+    /*Если блог был удален, то сообщаем об этом клиенту.*/
     res.sendStatus(deletedBlogResultHttpStatus);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/

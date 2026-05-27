@@ -1,4 +1,4 @@
-/*DTO для разрешенных значений query-параметра "sortBy" для сортировки данных по комментариям на странице при
+/*Input DTO для разрешенных значений query-параметра "sortBy", используемого для сортировки комментариев при
 пагинации.*/
 export enum CommentSortFieldInputDTO {
   CreatedAt = 'createdAt',

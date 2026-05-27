@@ -1,24 +1,51 @@
 import { postsRepository } from '../repositories/posts.repository';
 import { PostType } from '../types/post.type';
-import { ObjectId, WithId } from 'mongodb';
+import { WithId } from 'mongodb';
 import { CreatePostInputDTO } from '../routes/input-dto/create-post.input-dto';
-import { CreatePostInExistingBlogInputDTO } from '../routes/input-dto/create-post-in-existing-blog.input-dto';
 import { UpdatePostInputDTO } from '../routes/input-dto/update-post.input-dto';
-import { blogsRepository } from '../../blogs/repositories/blogs.repository';
 import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { Result } from '../../core/types/result/result.type';
 import { commentsService } from '../../comments/application/comments.service';
-import { BlogType } from '../../blogs/types/blog.type';
 import { CommentType } from '../../comments/types/comment.type';
+import { blogsService } from '../../blogs/application/blogs.service';
+import { BlogOutputDTO } from '../../blogs/routes/output-dto/blog.output-dto';
+import { PostOutputDTO } from '../routes/output-dto/post.output-dto';
+import { mapToPostOutputDTO } from '../repositories/mappers/map-to-post-output-dto.util';
 
-/*Сервис "postsService" для работы с данными по постам.*/
+/*Сервис "postsService" для работы с постами.*/
 export const postsService = {
-  /*Метод "findAllByBlogId()" для поиска всех постов в блоге по ID.*/
+  /*Метод "findById()" для поиска поста по ID.*/
+  async findById(postId: string): Promise<Result<{ postOutput: PostOutputDTO } | null>> {
+    /*Просим репозиторий "postsRepository" найти пост по ID в БД.*/
+    const postDB: WithId<PostType> | null = await postsRepository.findById(postId);
+
+    /*Если пост не был найден, то возвращаем ResultObject с информацией об этом.*/
+    if (!postDB) {
+      return {
+        status: ResultStatuses.NotFound,
+        data: null,
+        errorMessage: 'Not Found',
+        extensions: [{ field: 'postId', message: 'Not Found' }],
+      };
+    }
+
+    /*Если пост был найден, то преобразовываем пост из БД в подготовленный для отправки клиенту пост.*/
+    const postOutput: PostOutputDTO = mapToPostOutputDTO(postDB);
+
+    /*Возвращаем ResultObject c преобразованным постом.*/
+    return {
+      status: ResultStatuses.Ok,
+      data: { postOutput },
+      extensions: [],
+    };
+  },
+
+  /*Метод "findAllByBlogId()" для поиска постов в блоге по ID.*/
   async findAllByBlogId(blogId: string): Promise<Result<{ postsDB: WithId<PostType>[] | null }>> {
-    /*Просим репозиторий "postsRepository" найти все посты в блоге по ID в БД.*/
+    /*Просим репозиторий "postsRepository" найти посты в блоге по ID в БД.*/
     const postsDB: WithId<PostType>[] | null = await postsRepository.findAllByBlogId(blogId);
 
-    /*Возвращаем ResultObject c данными по постам.*/
+    /*Возвращаем ResultObject c постами.*/
     return {
       status: ResultStatuses.Ok,
       data: { postsDB },
@@ -26,13 +53,13 @@ export const postsService = {
     };
   },
 
-  /*Метод "create()" для добавления нового поста.*/
+  /*Метод "create()" для добавления поста.*/
   async create(dto: CreatePostInputDTO): Promise<Result<{ postId: string } | null>> {
-    /*Просим репозиторий "blogsRepository" проверить по ID существует ли блог в БД.*/
-    const blogDB: WithId<BlogType> | null = await blogsRepository.findById(dto.blogId);
+    /*Просим сервис "blogsService" найти блог по ID.*/
+    const blogResult: Result<{ blogOutput: BlogOutputDTO } | null> = await blogsService.findById(dto.blogId);
 
     /*Если блог не был найден, то возвращаем ResultObject с информацией об этом.*/
-    if (!blogDB) {
+    if (!blogResult.data!.blogOutput) {
       return {
         status: ResultStatuses.NotFound,
         data: null,
@@ -41,20 +68,20 @@ export const postsService = {
       };
     }
 
-    /*Если блог существует, то создаем объект с данными нового поста.*/
+    /*Если блог был найден, то создаем объект с данными нового поста.*/
     const newPost: PostType = {
       title: dto.title,
       shortDescription: dto.shortDescription,
       content: dto.content,
       blogId: dto.blogId,
-      blogName: blogDB.name,
+      blogName: blogResult.data!.blogOutput.name,
       createdAt: new Date(),
     };
 
-    /*Просим репозиторий "postsRepository" создать новый пост в БД.*/
+    /*Просим репозиторий "postsRepository" создать пост в БД.*/
     const postId: string = await postsRepository.create(newPost);
 
-    /*Возвращаем ResultObject c ID поста.*/
+    /*Возвращаем ResultObject c ID созданного поста.*/
     return {
       status: ResultStatuses.Created,
       data: { postId },
@@ -62,52 +89,13 @@ export const postsService = {
     };
   },
 
-  /*Метод "createInExistingBlog()" для добавления нового поста в существующий блог.*/
-  async createInExistingBlog(
-    blogId: string,
-    dto: CreatePostInExistingBlogInputDTO
-  ): Promise<Result<{ postId: string } | null>> {
-    /*Просим репозиторий "blogsRepository" проверить по ID существует ли блог в БД.*/
-    const blogDB: WithId<BlogType> | null = await blogsRepository.findById(blogId);
-
-    /*Если блог не был найден, то возвращаем ResultObject с информацией об этом.*/
-    if (!blogDB) {
-      return {
-        status: ResultStatuses.NotFound,
-        data: null,
-        errorMessage: 'Not Found',
-        extensions: [{ field: 'blogId', message: 'Not Found' }],
-      };
-    }
-
-    /*Если блог был найден, то создаем объект с данными по новому посту.*/
-    const newPost: PostType = {
-      title: dto.title,
-      shortDescription: dto.shortDescription,
-      content: dto.content,
-      blogId: blogId,
-      blogName: blogDB.name,
-      createdAt: new Date(),
-    };
-
-    /*Просим репозиторий "postsRepository" создать новый пост в БД.*/
-    const postId: string = await postsRepository.create(newPost);
-
-    /*Возвращаем ResultObject c ID поста.*/
-    return {
-      status: ResultStatuses.Created,
-      data: { postId },
-      extensions: [],
-    };
-  },
-
-  /*Метод "updateById()" для изменения данных поста по ID.*/
+  /*Метод "updateById()" для изменения поста по ID.*/
   async updateById(postId: string, dto: UpdatePostInputDTO): Promise<Result<{} | null>> {
     /*Просим репозиторий "postsRepository" изменить данные поста по ID в БД.*/
-    const updatedPostResult: number = await postsRepository.updateById(postId, dto);
+    const updatedPostCount: number = await postsRepository.updateById(postId, dto);
 
     /*Если пост не был изменен, то возвращаем ResultObject с информацией об этом.*/
-    if (updatedPostResult < 1) {
+    if (updatedPostCount < 1) {
       return {
         status: ResultStatuses.NotFound,
         data: null,
@@ -126,7 +114,7 @@ export const postsService = {
 
   /*Метод "deleteById()" для удаления поста по ID.*/
   async deleteById(postId: string): Promise<Result<{} | null>> {
-    /*Просим репозиторий "postsRepository" проверить по ID существует ли пост в БД.*/
+    /*Просим репозиторий "postsRepository" найти пост по ID в БД.*/
     const postDB: WithId<PostType> | null = await postsRepository.findById(postId);
 
     /*Если пост не был найден, то возвращаем ResultObject с информацией об этом.*/
@@ -139,21 +127,23 @@ export const postsService = {
       };
     }
 
-    /*Если пост был найден, то просим сервис "commentsService" узнать нет ли у этого поста комментариев.*/
+    /*Если пост был найден, то просим сервис "commentsService" найти комментарии в посте по ID.*/
     const commentsResult: Result<{ commentsDB: WithId<CommentType>[] | null }> =
       await commentsService.findAllByPostId(postId);
 
-    /*Если комментарии в посте были найдены, то просим сервис "commentsService" удалить их.*/
+    /*Если комментарии в посте были найдены, то удаляем их.*/
     if (commentsResult.data.commentsDB) {
-      const commentsIds: ObjectId[] = commentsResult.data.commentsDB!.map(comment => comment._id);
-      await commentsService.deleteManyByIds(commentsIds);
+      /*Получаем массив ID комментариев внутри поста.*/
+      const commentsIds: string[] = commentsResult.data.commentsDB!.map(comment => String(comment._id));
+      /*Просим сервис "commentsService" удалить комментарии внутри поста по ID.*/
+      for (const commentId of commentsIds) await commentsService.deleteById(commentId);
     }
 
     /*Просим репозиторий "postsRepository" удалить пост по ID в БД.*/
-    const deletedPostResult: number = await postsRepository.deleteById(postId);
+    const deletedPostCount: number = await postsRepository.deleteById(postId);
 
     /*Если пост не был удален, то возвращаем ResultObject с информацией об этом.*/
-    if (deletedPostResult < 1) {
+    if (deletedPostCount < 1) {
       return {
         status: ResultStatuses.NotFound,
         data: null,
@@ -166,19 +156,6 @@ export const postsService = {
     return {
       status: ResultStatuses.NoContent,
       data: {},
-      extensions: [],
-    };
-  },
-
-  /*Метод "deleteManyByIds()" для удаления нескольких постов по их ID.*/
-  async deleteManyByIds(postsIds: ObjectId[]): Promise<Result<{ deletedPostsResult: number }>> {
-    /*Просим репозиторий "postsRepository" удалить несколько постов по их ID в БД.*/
-    const deletedPostsResult: number = await postsRepository.deleteManyByIds(postsIds);
-
-    /*Возвращаем ResultObject c информацией о количестве удаленных постов.*/
-    return {
-      status: ResultStatuses.NoContent,
-      data: { deletedPostsResult },
       extensions: [],
     };
   },

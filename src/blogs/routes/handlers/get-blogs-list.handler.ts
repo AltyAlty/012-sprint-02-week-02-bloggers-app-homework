@@ -1,42 +1,33 @@
 import { Request, Response } from 'express';
 import { errorsHandler } from '../../../core/errors/errors.handler';
-import { matchedData } from 'express-validator';
 import { GetBlogsListQueryInputDTO } from '../input-dto/get-blogs-list-query.input-dto';
-import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
 import { blogsQueryService } from '../../application/blogs.query-service';
-import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/map-result-code-to-http-status';
 import { PaginatedBlogsListOutputDTO } from '../output-dto/paginated-blogs-list.output-dto';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { Result } from '../../../core/types/result/result.type';
+import { getSanitizedQueryInputWithDefaultPaginationSettings } from '../../../core/utils/pagination/get-sanitized-query-input-with-default-pagination-settings';
+import { BlogSortFieldInputDTO } from '../input-dto/blog-sort-field.input-dto';
 
-/*Функция-обработчик "getBlogsListHandler()" для GET-запросов для получения данных по всем блогам при помощи
-query-параметров.*/
+/*Функция-обработчик "getBlogsListHandler()" для GET-запросов по получению блогов, используя query-параметры.*/
 export const getBlogsListHandler = async (
   req: Request<{}, {}, {}, GetBlogsListQueryInputDTO>,
   res: Response<PaginatedBlogsListOutputDTO>
 ) => {
   try {
-    /*Функция "matchedData()" из библиотеки express-validator берет из объекта "req" только те поля, которые ранее
-    прошли через валидаторы и санитайзеры на основе библиотеки express-validator.*/
-    const sanitizedQueryInput = matchedData<GetBlogsListQueryInputDTO>(req, {
-      /*Берем данные только из объекта "req.query".*/
-      locations: ['query'],
-      /*Включаем опциональные поля - те, для которых в валидаторах использовался метод "optional()", даже если они не
-      пришли в запросе или были пропущены.*/
-      includeOptionals: true,
-    });
+    /*Санитизируем query-параметры и добавляем к ним дефолтные настройки пагинации.*/
+    const sanitizedQueryInputWithDefaultPaginationSettings = getSanitizedQueryInputWithDefaultPaginationSettings<
+      GetBlogsListQueryInputDTO,
+      BlogSortFieldInputDTO
+    >(req);
 
-    /*Добавляем к объекту с query-параметрами поля, чтобы этот объект соответствовал типу
-    "defaultPaginationSettingsType".*/
-    const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
-
-    /*Просим query-сервис "blogsQueryService" найти данные по блогам.*/
+    /*Просим query-сервис "blogsQueryService" найти блоги.*/
     const paginatedBlogsListResult: Result<{ paginatedBlogsListOutput: PaginatedBlogsListOutputDTO }> =
       await blogsQueryService.findMany(sanitizedQueryInputWithDefaultPaginationSettings);
 
-    /*Получаем HTTP-статус операции по поиску данных по блогам.*/
+    /*Получаем HTTP-статус операции по поиску блогов.*/
     const paginatedBlogsListResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(paginatedBlogsListResult.status);
-    /*Отправляем данные по блогам клиенту.*/
+    /*Отправляем блоги клиенту.*/
     res.status(paginatedBlogsListResultHttpStatus).send(paginatedBlogsListResult.data.paginatedBlogsListOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/

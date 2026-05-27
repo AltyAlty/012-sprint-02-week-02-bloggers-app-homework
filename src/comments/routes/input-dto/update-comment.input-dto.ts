@@ -1,4 +1,4 @@
-/*DTO для входных данных для изменения блога.*/
+/*Input DTO для изменения комментария.*/
 export type UpdateCommentInputDTO = {
   content: string;
 };

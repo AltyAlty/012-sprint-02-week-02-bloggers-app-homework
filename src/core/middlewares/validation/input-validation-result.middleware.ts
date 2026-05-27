@@ -6,13 +6,13 @@ import { HttpStatuses } from '../../types/http-statuses';
 import { ValidationErrorsListOutputDTO } from '../../types/validation/validation-errors-list.output-dto';
 import { ValidationErrorOutputDTO } from '../../types/validation/validation-error.output-dto';
 
-/*Функция "createErrorMessages()" формирует объект с сообщения об ошибках валидации, отправляемых клиенту.*/
+/*Функция "createErrorMessages()" формирует объект с сообщениями об ошибках валидации, отправляемых клиенту.*/
 export const createErrorMessages = (errors: ValidationErrorOutputDTO[]): ValidationErrorsListOutputDTO => ({
   errorsMessages: errors,
 });
 
 /*Функция "mapToValidationErrorOutputDTO()" преобразовывает валидационные ошибки из библиотеки express-validator в
-формат DTO для сообщений об ошибках валидации, отправляемых клиенту.*/
+формат Output DTO для сообщений об ошибках валидации, отправляемых клиенту.*/
 const mapToValidationErrorOutputDTO = (error: ValidationError): ValidationErrorOutputDTO => {
   const expressError: FieldValidationError = error as unknown as FieldValidationError;
   return { field: expressError.path, message: expressError.msg };

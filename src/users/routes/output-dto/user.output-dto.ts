@@ -1,4 +1,4 @@
-/*DTO для исходящих данных по пользователям.*/
+/*Output DTO для пользователя.*/
 export type UserOutputDTO = {
   id: string;
   login: string;

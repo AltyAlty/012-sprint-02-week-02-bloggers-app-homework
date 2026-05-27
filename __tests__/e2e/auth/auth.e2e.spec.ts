@@ -47,7 +47,7 @@ describe('Auth API endpoints check', () => {
     expect(loginResponse.body).toHaveProperty('accessToken');
     const accessToken = loginResponse.body.accessToken;
     expect(typeof accessToken).toBe('string');
-    expect(accessToken.length).toBeGreaterThan(0);
+    expect(accessToken.length).toBeGreaterThan(3);
 
     const meResponse = await request(app)
       .get(`${SETTINGS.AUTH_PATH}/me`)
@@ -63,7 +63,7 @@ describe('Auth API endpoints check', () => {
     expect(decodedToken).not.toBeNull();
 
     const userResult = await usersService.findByLoginOrEmail(credentials01.login);
-    const userId = userResult.data?.userOutput.id;
+    const userId = userResult.data!.userOutputWithPasswordHash.id;
     expect(decodedToken?.userId).toEqual(userId);
   });
 });

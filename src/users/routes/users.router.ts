@@ -16,9 +16,9 @@ usersRouter.use(basicAuthGuardMiddleware);
 
 /*Конфигурируем роутер "usersRouter".*/
 usersRouter
-  /*GET-запрос для получения данных по всем пользователям с пагинацией при помощи query-параметров.*/
+  /*GET-запрос по получению пользователей с пагинацией, используя query-параметры.*/
   .get('', paginationValidationMiddleware(UserSortFieldInputDTO), inputValidationResultMiddleware, getUsersListHandler)
-  /*POST-запрос для добавления нового пользователя.*/
+  /*POST-запрос по добавлению пользователя.*/
   .post('', userCreateInputValidation, inputValidationResultMiddleware, createUserHandler)
-  /*DELETE-запрос для удаления пользователя по ID при помощи URI-параметров.*/
+  /*DELETE-запрос по удалению пользователя по ID, используя URI-параметры.*/
   .delete('/:id', idValidation, inputValidationResultMiddleware, deleteUserByIdHandler);

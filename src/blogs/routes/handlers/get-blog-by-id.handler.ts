@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { blogsQueryService } from '../../application/blogs.query-service';
-import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/map-result-code-to-http-status';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { ExtensionType, Result } from '../../../core/types/result/result.type';
 import { BlogOutputDTO } from '../output-dto/blog.output-dto';
@@ -16,7 +16,7 @@ import { BlogOutputDTO } from '../output-dto/blog.output-dto';
 3. На третьем месте в типе идет "ReqBody". Это то, что приходит в body в запросе.
 4. На четвертом месте в типе идут Query-параметры.
 
-Функция-обработчик "getBlogByIdHandler()" для GET-запросов для поиска блога по ID при помощи URI-параметров.*/
+Функция-обработчик "getBlogByIdHandler()" для GET-запросов по получению блога по ID, используя URI-параметры.*/
 export const getBlogByIdHandler = async (
   req: Request<{ id: string }>,
   res: Response<BlogOutputDTO | ExtensionType[]>
@@ -24,18 +24,18 @@ export const getBlogByIdHandler = async (
   try {
     /*Получаем ID блога.*/
     const blogId: string = req.params.id;
-    /*Просим query-сервис "blogsQueryService" найти данные по блогу по ID.*/
+    /*Просим query-сервис "blogsQueryService" найти блог по ID.*/
     const blogResult: Result<{ blogOutput: BlogOutputDTO } | null> = await blogsQueryService.findById(blogId);
-    /*Получаем HTTP-статус операции по поиску данных по блогу по ID.*/
+    /*Получаем HTTP-статус операции по поиску блога по ID.*/
     const blogResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(blogResult.status);
 
-    /*Если данные по блогу не были найдены, то сообщаем об этом клиенту.*/
+    /*Если блог не был найден, то сообщаем об этом клиенту.*/
     if (blogResultHttpStatus !== HttpStatuses.Ok_200) {
       return res.status(blogResultHttpStatus).send(blogResult.extensions);
     }
 
-    /*Если данные по блогу были найдены, то отправляем их клиенту.*/
-    res.status(blogResultHttpStatus).send(blogResult.data?.blogOutput);
+    /*Если блог был найден, то отправляем его клиенту.*/
+    res.status(blogResultHttpStatus).send(blogResult.data!.blogOutput);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/
     errorsHandler(error, res);

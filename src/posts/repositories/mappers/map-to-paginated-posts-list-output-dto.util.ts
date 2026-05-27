@@ -3,8 +3,7 @@ import { PostType } from '../../types/post.type';
 import { PaginatedPostsListOutputDTO } from '../../routes/output-dto/paginated-posts-list.output-dto';
 import { PostOutputDTO } from '../../routes/output-dto/post.output-dto';
 
-/*Функция "mapToPaginatedPostsListOutputDTO()" преобразовывает данные по постам из БД в подготовленные для пагинации
-данные.*/
+/*Функция "mapToPaginatedPostsListOutputDTO()" преобразовывает посты из БД в подготовленные для пагинации посты.*/
 export const mapToPaginatedPostsListOutputDTO = (
   posts: WithId<PostType>[],
   meta: { pageNumber: number; pageSize: number; totalCount: number }

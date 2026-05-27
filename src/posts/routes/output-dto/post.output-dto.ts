@@ -1,4 +1,4 @@
-/*DTO для исходящих данных по постам.*/
+/*Output DTO для поста.*/
 export type PostOutputDTO = {
   id: string;
   title: string;

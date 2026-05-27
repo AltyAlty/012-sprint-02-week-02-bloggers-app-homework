@@ -9,34 +9,11 @@ import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { WithId } from 'mongodb';
 import { UserType } from '../types/user.type';
 
-/*Query-сервис "usersQueryService" для работы с данными по пользователям.*/
+/*Query-сервис "usersQueryService" для работы с пользователями.*/
 export const usersQueryService = {
-  /*Метод "findMany()" для поиска данных по пользователям.*/
-  async findMany(
-    queryDTO: GetUsersListQueryInputDTO
-  ): Promise<Result<{ paginatedUsersListOutput: PaginatedUsersListOutputDTO }>> {
-    /*Просим query-репозиторий "usersQueryRepository" найти данные по пользователям в БД.*/
-    const { items, totalCount }: { items: WithId<UserType>[]; totalCount: number } =
-      await usersQueryRepository.findMany(queryDTO);
-
-    /*Преобразовываем данные по пользователям из БД в подготовленные для пагинации данные.*/
-    const paginatedUsersListOutput: PaginatedUsersListOutputDTO = mapToPaginatedUsersListOutputDTO(items, {
-      pageNumber: queryDTO.pageNumber,
-      pageSize: queryDTO.pageSize,
-      totalCount,
-    });
-
-    /*Возвращаем ResultObject c преобразованными для пагинации данными по пользователям.*/
-    return {
-      status: ResultStatuses.Ok,
-      data: { paginatedUsersListOutput },
-      extensions: [],
-    };
-  },
-
-  /*Метод "findById()" для поиска данных по пользователю по ID.*/
+  /*Метод "findById()" для поиска пользователя по ID.*/
   async findById(userId: string): Promise<Result<{ userOutput: UserOutputDTO } | null>> {
-    /*Просим query-репозиторий "usersQueryRepository" найти данные по пользователю по ID в БД.*/
+    /*Просим query-репозиторий "usersQueryRepository" найти пользователя по ID в БД.*/
     const userDB: WithId<UserType> | null = await usersQueryRepository.findById(userId);
 
     /*Если пользователь не был найден, то возвращаем ResultObject с информацией об этом.*/
@@ -49,14 +26,36 @@ export const usersQueryService = {
       };
     }
 
-    /*Если пользователь был найден, то преобразовываем данные по пользователю из БД в подготовленные для отправки
-    клиенту данные.*/
+    /*Если пользователь был найден, то преобразовываем пользователя из БД в подготовленного для отправки пользователя.*/
     const userOutput: UserOutputDTO = mapToUserOutputDTO(userDB);
 
-    /*Возвращаем ResultObject c преобразованными данными по пользователю.*/
+    /*Возвращаем ResultObject c преобразованным пользователем.*/
     return {
       status: ResultStatuses.Ok,
       data: { userOutput },
+      extensions: [],
+    };
+  },
+
+  /*Метод "findMany()" для поиска пользователей.*/
+  async findMany(
+    queryDTO: GetUsersListQueryInputDTO
+  ): Promise<Result<{ paginatedUsersListOutput: PaginatedUsersListOutputDTO }>> {
+    /*Просим query-репозиторий "usersQueryRepository" найти пользователей в БД.*/
+    const { items, totalCount }: { items: WithId<UserType>[]; totalCount: number } =
+      await usersQueryRepository.findMany(queryDTO);
+
+    /*Преобразовываем пользователей из БД в подготовленных для пагинации пользователей.*/
+    const paginatedUsersListOutput: PaginatedUsersListOutputDTO = mapToPaginatedUsersListOutputDTO(items, {
+      pageNumber: queryDTO.pageNumber,
+      pageSize: queryDTO.pageSize,
+      totalCount,
+    });
+
+    /*Возвращаем ResultObject c преобразованными пользователями.*/
+    return {
+      status: ResultStatuses.Ok,
+      data: { paginatedUsersListOutput },
       extensions: [],
     };
   },

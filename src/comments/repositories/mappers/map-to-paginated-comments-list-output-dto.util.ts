@@ -3,8 +3,8 @@ import { CommentType } from '../../types/comment.type';
 import { PaginatedCommentsListOutputDTO } from '../../routes/output-dto/paginated-comments-list.output-dto';
 import { CommentOutputDTO } from '../../routes/output-dto/comment.output-dto';
 
-/*Функция "mapToPaginatedCommentsListOutputDTO()" преобразовывает данные по комментариям из БД в подготовленные для
-пагинации данные.*/
+/*Функция "mapToPaginatedCommentsListOutputDTO()" преобразовывает комментарии из БД в подготовленные для пагинации
+комментарии.*/
 export const mapToPaginatedCommentsListOutputDTO = (
   comments: WithId<CommentType>[],
   meta: { pageNumber: number; pageSize: number; totalCount: number }

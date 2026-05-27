@@ -5,9 +5,19 @@ import { GetUsersListQueryInputDTO } from '../routes/input-dto/get-users-list-qu
 import { SortDirection } from '../../core/types/pagination/sort-direction';
 import { UserSortFieldInputDTO } from '../routes/input-dto/user-sort-field.input-dto';
 
-/*Query-репозиторий "usersQueryRepository" для работы с данными по пользователям в БД.*/
+/*Query-репозиторий "usersQueryRepository" для работы с пользователями в БД.*/
 export const usersQueryRepository = {
-  /*Метод "findMany()" для поиска данных по пользователям в БД.*/
+  /*Метод "findById()" для поиска пользователя по ID в БД.*/
+  async findById(userId: string): Promise<WithId<UserType> | null> {
+    /*Просим коллекцию "usersCollection" найти пользователя по ID в БД.*/
+    const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    /*Если пользователь не был найден, то возвращаем null.*/
+    if (!user) return null;
+    /*Если пользователь был найден, то возвращаем его.*/
+    return user;
+  },
+
+  /*Метод "findMany()" для поиска пользователей в БД.*/
   async findMany(queryDTO: GetUsersListQueryInputDTO): Promise<{ items: WithId<UserType>[]; totalCount: number }> {
     /*Создаем переменные на основе параметра "queryDTO" при помощи деструктуризации.*/
     const {
@@ -36,28 +46,19 @@ export const usersQueryRepository = {
     if (searchEmailTerm) conditions.push({ email: { $regex: searchEmailTerm, $options: 'i' } });
     const filter: Filter<UserType> = conditions.length > 0 ? { $or: conditions } : {};
 
-    /*Просим коллекцию "usersCollection" найти данные по пользователям в БД.*/
-    const items: WithId<UserType>[] = await usersCollection
-      .find(filter)
-      .sort({ [sortBy]: sortDirection })
-      .skip(skip)
-      .limit(pageSize)
-      .toArray();
+    /*Просим коллекцию "usersCollection" найти пользователей по ID в БД и подсчитать общее количество документов,
+    подходящих под фильтр, без учета пагинации.*/
+    const [items, totalCount]: [WithId<UserType>[], number] = await Promise.all([
+      usersCollection
+        .find(filter)
+        .sort({ [sortBy]: sortDirection })
+        .skip(skip)
+        .limit(pageSize)
+        .toArray(),
+      usersCollection.countDocuments(filter),
+    ]);
 
-    /*Просим коллекцию "usersCollection" подсчитать общее количество документов, подходящих под фильтр, без учета
-    пагинации.*/
-    const totalCount: number = await usersCollection.countDocuments(filter);
-    /*Возвращаем найденные данные по пользователям.*/
+    /*Возвращаем данные по пользователям.*/
     return { items, totalCount };
-  },
-
-  /*Метод "findById()" для поиска данных по пользователю по ID в БД.*/
-  async findById(userId: string): Promise<WithId<UserType> | null> {
-    /*Просим коллекцию "usersCollection" найти данные по пользователю по ID в БД.*/
-    const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    /*Если данные по пользователю не были найдены, то возвращаем null.*/
-    if (!user) return null;
-    /*Если данные по пользователю были найдены, то возвращаем их.*/
-    return user;
   },
 };

@@ -11,41 +11,40 @@ import { paginationValidationMiddleware } from '../../core/middlewares/validatio
 import { PostSortFieldInputDTO } from './input-dto/post-sort-field.input-dto';
 import { deletePostByIdHandler } from './handlers/delete-post-by-id.handler';
 import { CommentSortFieldInputDTO } from '../../comments/routes/input-dto/comment-sort-field.input-dto';
-import { getCommentsListByBlogIdHandler } from './handlers/get-comments-list-by-post-id.handler';
+import { getCommentsListByPostIdHandler } from './handlers/get-comments-list-by-post-id.handler';
 import { accessTokenGuardMiddleware } from '../../auth/middlewares/guard-middlewares/access-token.guard-middleware';
-import { commentInExistingPostCreateInputValidation } from '../../comments/validation/comment-input-validation.middlewares';
-import { createCommentInExistingPostByIdHandler } from './handlers/creat-comment-in-post-by-id.handler';
+import { commentInPostCreateInputValidation } from '../../comments/validation/comment-input-validation.middlewares';
+import { createCommentInPostByIdHandler } from './handlers/creat-comment-in-post-by-id.handler';
 
 /*Роутер из Express для работы с данными по постам.*/
 export const postsRouter: Router = Router({});
 
 /*Конфигурируем роутер "postsRouter".*/
 postsRouter
-  /*GET-запрос для получения данных по всем комментариям в существующем посте по ID с пагинацией при помощи
-  URI-параметров.*/
+  /*GET-запрос по получению комментариев с пагинацией в посте по ID, используя URI-параметры.*/
   .get(
     '/:postId/comments',
     postIdValidation,
     paginationValidationMiddleware(CommentSortFieldInputDTO),
     inputValidationResultMiddleware,
-    getCommentsListByBlogIdHandler
+    getCommentsListByPostIdHandler
   )
-  /*POST-запрос для добавления нового комментария в существующий пост по ID при помощи URI-параметров.*/
+  /*POST-запрос по добавлению комментария в пост по ID, используя URI-параметры.*/
   .post(
     '/:postId/comments',
     accessTokenGuardMiddleware,
     postIdValidation,
-    commentInExistingPostCreateInputValidation,
+    commentInPostCreateInputValidation,
     inputValidationResultMiddleware,
-    createCommentInExistingPostByIdHandler
+    createCommentInPostByIdHandler
   )
-  /*GET-запрос для получения данных по всем постам с пагинацией при помощи query-параметров.*/
+  /*GET-запрос по получению постов с пагинацией, используя query-параметры.*/
   .get('', paginationValidationMiddleware(PostSortFieldInputDTO), inputValidationResultMiddleware, getPostsListHandler)
-  /*POST-запрос для добавления нового поста.*/
+  /*POST-запрос по добавлению поста.*/
   .post('', basicAuthGuardMiddleware, postCreateInputValidation, inputValidationResultMiddleware, createPostHandler)
-  /*GET-запрос для поиска поста по ID при помощи URI-параметров.*/
+  /*GET-запрос по получению поста по ID, используя URI-параметры.*/
   .get('/:id', idValidation, inputValidationResultMiddleware, getPostByIdHandler)
-  /*PUT-запрос для изменения данных поста по ID при помощи URI-параметров.*/
+  /*PUT-запрос по изменению поста по ID, используя URI-параметры.*/
   .put(
     '/:id',
     basicAuthGuardMiddleware,
@@ -54,5 +53,5 @@ postsRouter
     inputValidationResultMiddleware,
     updatePostByIdHandler
   )
-  /*DELETE-запрос для удаления поста по ID при помощи URI-параметров.*/
+  /*DELETE-запрос по удалению поста по ID, используя URI-параметры.*/
   .delete('/:id', basicAuthGuardMiddleware, idValidation, inputValidationResultMiddleware, deletePostByIdHandler);

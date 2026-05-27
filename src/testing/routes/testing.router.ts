@@ -7,7 +7,7 @@ export const testingRouter = Router({});
 
 /*Конфигурируем роутер "testingRouter".*/
 testingRouter
-  /*DELETE-запрос для очистки БД для целей тестирования.*/
+  /*DELETE-запрос по очистке БД для целей тестирования.*/
   .delete('/all-data', async (req: Request, res: Response) => {
     await Promise.all([
       blogsCollection.deleteMany(),

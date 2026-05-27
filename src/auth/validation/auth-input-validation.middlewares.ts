@@ -19,5 +19,5 @@ const passwordValidation = body('password')
   .withMessage('password is too short or too long');
 
 /*Комбинируем вышеуказанные middlewares в один middleware "authUserPostInputValidation", чтобы использовать его для
-проверки запросов на аутентификацию пользователей.*/
+проверки запросов по аутентификации пользователя.*/
 export const authUserPostInputValidation = [loginOrEmailValidation, passwordValidation];

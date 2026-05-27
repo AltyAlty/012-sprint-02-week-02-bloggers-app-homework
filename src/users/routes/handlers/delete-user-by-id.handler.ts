@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { usersService } from '../../application/users.service';
-import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/map-result-code-to-http-status';
 import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
-/*Функция-обработчик "deleteUserByIdHandler()" для DELETE-запросов для удаления пользователя по ID при помощи
-URI-параметров.*/
+/*Функция-обработчик "deleteUserByIdHandler()" для DELETE-запросов по удалению пользователя по ID, используя
+URI-параметры.*/
 export const deleteUserByIdHandler = async (req: Request<{ id: string }>, res: Response<void | ExtensionType[]>) => {
   try {
     /*Получаем ID пользователя.*/
@@ -21,7 +21,7 @@ export const deleteUserByIdHandler = async (req: Request<{ id: string }>, res: R
       return res.status(deletedUserResultHttpStatus).send(deletedUserResult.extensions);
     }
 
-    /*Если пользователь был удален, то сообщаем клиенту об этом.*/
+    /*Если пользователь был удален, то сообщаем об этом клиенту.*/
     res.sendStatus(deletedUserResultHttpStatus);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/

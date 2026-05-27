@@ -1,4 +1,4 @@
-/*DTO для разрешенных значений query-параметра "sortBy" для сортировки данных по постам на странице при пагинации.*/
+/*Input DTO для разрешенных значений query-параметра "sortBy", используемого для сортировки постов при пагинации.*/
 export enum PostSortFieldInputDTO {
   CreatedAt = 'createdAt',
   Title = 'title',

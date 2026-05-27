@@ -3,29 +3,29 @@ import { blogsCollection } from '../../db/mongodb/mongo.db';
 import { BlogType } from '../types/blog.type';
 import { UpdateBlogInputDTO } from '../routes/input-dto/update-blog.input-dto';
 
-/*Репозиторий "blogsRepository" для работы с данными по блогам в БД.*/
+/*Репозиторий "blogsRepository" для работы с блогами в БД.*/
 export const blogsRepository = {
-  /*Метод "create()" для добавления нового блога в БД.*/
+  /*Метод "findById()" для поиска блога по ID в БД.*/
+  async findById(blogId: string): Promise<WithId<BlogType> | null> {
+    /*Просим коллекцию "blogsCollection" найти блог по ID в БД.*/
+    const blog: WithId<BlogType> | null = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
+    /*Если блог не был найден, то возвращаем null.*/
+    if (!blog) return null;
+    /*Если блог был найден, то возвращаем его.*/
+    return blog;
+  },
+
+  /*Метод "create()" для добавления блога в БД.*/
   async create(newBlog: BlogType): Promise<string> {
-    /*Просим коллекцию "blogsCollection" создать новый блог в БД.*/
+    /*Просим коллекцию "blogsCollection" создать блог в БД.*/
     const insertResult: InsertOneResult<BlogType> = await blogsCollection.insertOne(newBlog);
     /*Возвращаем ID созданного блога.*/
     return insertResult.insertedId.toString();
   },
 
-  /*Метод "findById()" для поиска блога по ID в БД.*/
-  async findById(blogId: string): Promise<WithId<BlogType> | null> {
-    /*Просим коллекцию "blogsCollection" найти данные по блогу по ID в БД.*/
-    const blog: WithId<BlogType> | null = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
-    /*Если данные по блогу не были найдены, то возвращаем null.*/
-    if (!blog) return null;
-    /*Если данные по блогу были найдены, то возвращаем их.*/
-    return blog;
-  },
-
-  /*Метод "updateById()" для изменения данных блога по ID в БД.*/
+  /*Метод "updateById()" для изменения блога по ID в БД.*/
   async updateById(blogId: string, dto: UpdateBlogInputDTO): Promise<number> {
-    /*Просим коллекцию "blogsCollection" изменить данные блога по ID в БД.*/
+    /*Просим коллекцию "blogsCollection" изменить блог по ID в БД.*/
     const updateResult: UpdateResult<BlogType> = await blogsCollection.updateOne(
       { _id: new ObjectId(blogId) },
       {

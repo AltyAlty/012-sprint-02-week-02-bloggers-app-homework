@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { postsService } from '../../application/posts.service';
-import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/map-result-code-to-http-status';
 import { ExtensionType, Result } from '../../../core/types/result/result.type';
 
-/*Функция-обработчик "deletePostByIdHandler()" для DELETE-запросов для удаления поста по ID при помощи URI-параметров.*/
+/*Функция-обработчик "deletePostByIdHandler()" для DELETE-запросов по удалению поста по ID, используя URI-параметры.*/
 export const deletePostByIdHandler = async (req: Request<{ id: string }>, res: Response<void | ExtensionType[]>) => {
   try {
     /*Получаем ID поста.*/
@@ -20,7 +20,7 @@ export const deletePostByIdHandler = async (req: Request<{ id: string }>, res: R
       return res.status(deletedPostResultHttpStatus).send(deletedPostResult.extensions);
     }
 
-    /*Если пост был удален, то сообщаем клиенту об этом.*/
+    /*Если пост был удален, то сообщаем об этом клиенту.*/
     res.sendStatus(deletedPostResultHttpStatus);
   } catch (error: unknown) {
     /*Если была перехвачена ошибка, то обрабатываем ее.*/

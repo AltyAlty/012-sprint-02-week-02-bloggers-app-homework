@@ -1,4 +1,4 @@
-/*DTO для входных данных для изменения блога.*/
+/*Input DTO для изменения блога.*/
 export type UpdateBlogInputDTO = {
   name: string;
   description: string;

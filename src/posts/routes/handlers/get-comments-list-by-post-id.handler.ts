@@ -1,53 +1,45 @@
 import { Request, Response } from 'express';
-import { GetCommentsListInExistingPostQueryInputDTO } from '../../../comments/routes/input-dto/get-comments-list-in-existing-post-query.input-dto';
-import { matchedData } from 'express-validator';
-import { applyDefaultPaginationSettings } from '../../../core/utils/pagination/apply-default-pagination-settings';
+import { GetCommentsListInPostQueryInputDTO } from '../../../comments/routes/input-dto/get-comments-list-in-post-query.input-dto';
 import { commentsQueryService } from '../../../comments/application/comments.query-service';
-import { mapResultCodeToHttpStatus } from '../../../core/utils/result/mapResultCodeToHttpStatus';
+import { mapResultCodeToHttpStatus } from '../../../core/utils/result/map-result-code-to-http-status';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 import { errorsHandler } from '../../../core/errors/errors.handler';
 import { ExtensionType, Result } from '../../../core/types/result/result.type';
 import { PaginatedCommentsListOutputDTO } from '../../../comments/routes/output-dto/paginated-comments-list.output-dto';
+import { getSanitizedQueryInputWithDefaultPaginationSettings } from '../../../core/utils/pagination/get-sanitized-query-input-with-default-pagination-settings';
+import { CommentSortFieldInputDTO } from '../../../comments/routes/input-dto/comment-sort-field.input-dto';
 
-/*Функция-обработчик "getCommentsListByBlogIdHandler()" для GET-запросов для получения данных по всем комментариям в
-существующем посте по ID с пагинацией при помощи URI-параметров.*/
-export const getCommentsListByBlogIdHandler = async (
-  req: Request<{ postId: string }, {}, {}, GetCommentsListInExistingPostQueryInputDTO>,
+/*Функция-обработчик "getCommentsListByPostIdHandler()" для GET-запросов по получению комментариев с пагинацией в посте
+по ID, используя URI-параметры.*/
+export const getCommentsListByPostIdHandler = async (
+  req: Request<{ postId: string }, {}, {}, GetCommentsListInPostQueryInputDTO>,
   res: Response<PaginatedCommentsListOutputDTO | ExtensionType[]>
 ) => {
   try {
     /*Получаем ID поста.*/
     const postId: string = req.params.postId;
 
-    /*Функция "matchedData()" из библиотеки express-validator берет из объекта "req" только те поля, которые ранее
-    прошли через валидаторы и санитайзеры на основе библиотеки express-validator.*/
-    const sanitizedQueryInput = matchedData<GetCommentsListInExistingPostQueryInputDTO>(req, {
-      /*Берем данные только из объекта "req.query".*/
-      locations: ['query'],
-      /*Включить опциональные поля, то есть те, для которых в валидаторах использовался метод "optional()", даже если
-      они не пришли в запросе или были пропущены.*/
-      includeOptionals: true,
-    });
+    /*Санитизируем query-параметры и добавляем к ним дефолтные настройки пагинации.*/
+    const sanitizedQueryInputWithDefaultPaginationSettings = getSanitizedQueryInputWithDefaultPaginationSettings<
+      GetCommentsListInPostQueryInputDTO,
+      CommentSortFieldInputDTO
+    >(req);
 
-    /*Добавляем к объекту с query-параметрами поля, чтобы этот объект соответствовал типу
-    "defaultPaginationSettingsType".*/
-    const sanitizedQueryInputWithDefaultPaginationSettings = applyDefaultPaginationSettings(sanitizedQueryInput);
-
-    /*Просим query-сервис "commentsQueryService" найти данные по комментариям в существующем посте по ID.*/
+    /*Просим query-сервис "commentsQueryService" найти комментарии в посте по ID.*/
     const paginatedCommentsListResult: Result<{ paginatedCommentsListOutput: PaginatedCommentsListOutputDTO } | null> =
       await commentsQueryService.findManyByPostId(postId, sanitizedQueryInputWithDefaultPaginationSettings);
 
-    /*Получаем HTTP-статус операции по поиску комментариев в существующем посте по ID.*/
+    /*Получаем HTTP-статус операции по поиску комментариев в посте по ID.*/
     const paginatedCommentsListResultHttpStatus: HttpStatuses = mapResultCodeToHttpStatus(
       paginatedCommentsListResult.status
     );
 
-    /*Если данные по комментариям не были найдены, то сообщаем об этом клиенту.*/
+    /*Если комментарии не были найдены в посте, то сообщаем об этом клиенту.*/
     if (paginatedCommentsListResultHttpStatus !== HttpStatuses.Ok_200) {
       return res.status(paginatedCommentsListResultHttpStatus).send(paginatedCommentsListResult.extensions);
     }
 
-    /*Если данные по комментариям были найдены, то отправляем их клиенту.*/
+    /*Если комментарии были найдены в посте, то отправляем их клиенту.*/
     res
       .status(paginatedCommentsListResultHttpStatus)
       .send(paginatedCommentsListResult.data!.paginatedCommentsListOutput);

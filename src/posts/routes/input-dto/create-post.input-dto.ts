@@ -1,4 +1,4 @@
-/*DTO для входных данных для создания нового поста.*/
+/*Input DTO для создания поста.*/
 export type CreatePostInputDTO = {
   title: string;
   shortDescription: string;

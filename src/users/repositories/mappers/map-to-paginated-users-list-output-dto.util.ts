@@ -3,8 +3,8 @@ import { UserType } from '../../types/user.type';
 import { UserOutputDTO } from '../../routes/output-dto/user.output-dto';
 import { PaginatedUsersListOutputDTO } from '../../routes/output-dto/paginated-users-list.output-dto';
 
-/*Функция "mapToPaginatedUsersListOutputDTO()" преобразовывает данные по пользователям из БД в подготовленные для
-пагинации данные.*/
+/*Функция "mapToPaginatedUsersListOutputDTO()" преобразовывает пользователей из БД в подготовленные для пагинации
+пользователей.*/
 export const mapToPaginatedUsersListOutputDTO = (
   users: WithId<UserType>[],
   meta: { pageNumber: number; pageSize: number; totalCount: number }

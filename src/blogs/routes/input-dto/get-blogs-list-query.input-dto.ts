@@ -1,7 +1,7 @@
 import { defaultPaginationSettingsType } from '../../../core/types/pagination/default-pagination-settings.type';
 import { BlogSortFieldInputDTO } from './blog-sort-field.input-dto';
 
-/*DTO для query-параметров при GET-запросе для получения данных по всем блогам.
+/*Input DTO для query-параметров при получении блогов.
 
 Касательно TS:
 1. "defaultPaginationSettingsType<BlogSortFieldInputDTO>": обязательная часть типа.

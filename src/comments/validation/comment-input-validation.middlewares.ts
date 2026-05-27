@@ -11,8 +11,8 @@ const contentValidation = body('content')
   .withMessage('content is too short or too long');
 
 /*Комбинируем вышеуказанные middlewares в один middleware "commentUpdateInputValidation", чтобы использовать его для
-проверки запросов на изменение комментариев.*/
+проверки запросов по изменению комментария.*/
 export const commentUpdateInputValidation = [contentValidation];
-/*Комбинируем вышеуказанные middlewares в один middleware "commentInExistingPostCreateInputValidation", чтобы
-использовать его для проверки запросов на создание комментариев в существующем посте.*/
-export const commentInExistingPostCreateInputValidation = [contentValidation];
+/*Комбинируем вышеуказанные middlewares в один middleware "commentInPostCreateInputValidation", чтобы использовать его
+для проверки запросов по созданию комментария в посте.*/
+export const commentInPostCreateInputValidation = [contentValidation];

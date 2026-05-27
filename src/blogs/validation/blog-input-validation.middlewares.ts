@@ -35,8 +35,8 @@ const websiteUrlValidation = body('websiteUrl')
   .withMessage('websiteUrl is not correct');
 
 /*Комбинируем вышеуказанные middlewares в один middleware "blogCreateInputValidation", чтобы использовать его для
-проверки запросов на создание блогов.*/
+проверки запросов по созданию блога.*/
 export const blogCreateInputValidation = [nameValidation, descriptionValidation, websiteUrlValidation];
 /*Комбинируем вышеуказанные middlewares в один middleware "blogUpdateInputValidation", чтобы использовать его для
-проверки запросов на изменение блогов.*/
+проверки запросов по изменению блога.*/
 export const blogUpdateInputValidation = [nameValidation, descriptionValidation, websiteUrlValidation];

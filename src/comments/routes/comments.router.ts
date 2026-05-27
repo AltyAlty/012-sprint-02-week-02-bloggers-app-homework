@@ -12,7 +12,7 @@ export const commentsRouter: Router = Router({});
 
 /*Конфигурируем роутер "commentsRouter".*/
 commentsRouter
-  /*PUT-запрос для изменения данных комментария по ID при помощи URI-параметров.*/
+  /*PUT-запрос по изменению комментария по ID, используя URI-параметры.*/
   .put(
     '/:id',
     accessTokenGuardMiddleware,
@@ -21,7 +21,7 @@ commentsRouter
     inputValidationResultMiddleware,
     updateCommentByIdHandler
   )
-  /*DELETE-запрос для удаления комментария по ID при помощи URI-параметров.*/
+  /*DELETE-запрос по удалению комментария по ID, используя URI-параметры.*/
   .delete('/:id', accessTokenGuardMiddleware, idValidation, inputValidationResultMiddleware, deleteCommentByIdHandler)
-  /*GET-запрос для поиска комментария по ID при помощи URI-параметров.*/
+  /*GET-запрос по получению комментария по ID, используя URI-параметры.*/
   .get('/:id', idValidation, inputValidationResultMiddleware, getCommentByIdHandler);

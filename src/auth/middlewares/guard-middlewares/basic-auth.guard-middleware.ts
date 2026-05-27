@@ -4,10 +4,10 @@ import { SETTINGS } from '../../../core/settings/settings';
 
 /*Middleware "basicAuthGuardMiddleware" отвечает за базовую авторизацию в приложении.*/
 export const basicAuthGuardMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  /*Получаем заголовок "Authorization" из запроса. Должно быть вида "Basic <base64-encoded-credentials>"*/
+  /*Получаем заголовок "Authorization" из запроса. Должно быть вида "Basic <base64-encoded-credentials>".*/
   const auth: string = req.headers['authorization'] as string;
 
-  /*Если получить заголовок "Authorization" не удалось, то сообщаем об этом клиенту.*/
+  /*Если получить заголовок "Authorization" не удалось, то сообщаем об отказе в авторизации клиенту.*/
   if (!auth) {
     res.sendStatus(HttpStatuses.Unauthorized_401);
     return;
@@ -16,7 +16,7 @@ export const basicAuthGuardMiddleware = (req: Request, res: Response, next: Next
   /*Разбиваем строку по пробелу, получая тип авторизации ("Basic") и токен.*/
   const [authType, token]: string[] = auth.split(' ');
 
-  /*Если тип авторизации не "Basic", то сообщаем об этом клиенту.*/
+  /*Если тип авторизации не "Basic", то сообщаем об отказе в авторизации клиенту.*/
   if (authType !== 'Basic') {
     res.sendStatus(HttpStatuses.Unauthorized_401);
     return;
@@ -27,7 +27,7 @@ export const basicAuthGuardMiddleware = (req: Request, res: Response, next: Next
   /*Разделяем расшифрованный токен на логин и пароль.*/
   const [username, password]: string[] = credentials.split(':');
 
-  /*Если логин и пароль не совпадают с заранее заданными значениями, то сообщаем об этом клиенту.*/
+  /*Если логин и пароль не совпадают с заранее заданными значениями, то сообщаем об отказе в авторизации клиенту.*/
   if (username !== SETTINGS.BASIC_AUTH_ADMIN_USERNAME || password !== SETTINGS.BASIC_AUTH_ADMIN_PASSWORD) {
     res.sendStatus(HttpStatuses.Unauthorized_401);
     return;

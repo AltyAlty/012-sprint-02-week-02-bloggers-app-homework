@@ -37,7 +37,7 @@ export const blogIdValidation = body('blogId')
   .isLength({ min: 1 });
 
 /*Комбинируем вышеуказанные middlewares в один middleware "postCreateInputValidation", чтобы использовать его для
-проверки запросов на создание постов.*/
+проверки запросов по созданию поста.*/
 export const postCreateInputValidation = [
   titleValidation,
   shortDescriptionValidation,
@@ -46,7 +46,7 @@ export const postCreateInputValidation = [
 ];
 
 /*Комбинируем вышеуказанные middlewares в один middleware "postUpdateInputValidation", чтобы использовать его для
-проверки запросов на изменение постов.*/
+проверки запросов по изменению поста.*/
 export const postUpdateInputValidation = [
   titleValidation,
   shortDescriptionValidation,
@@ -54,6 +54,6 @@ export const postUpdateInputValidation = [
   blogIdValidation,
 ];
 
-/*Комбинируем вышеуказанные middlewares в один middleware "postInExistingBlogCreateInputValidation", чтобы использовать
-его для проверки запросов на создание постов в существующем блоге.*/
-export const postInExistingBlogCreateInputValidation = [titleValidation, shortDescriptionValidation, contentValidation];
+/*Комбинируем вышеуказанные middlewares в один middleware "postInBlogCreateInputValidation", чтобы использовать его для
+проверки запросов по созданию поста в блоге.*/
+export const postInBlogCreateInputValidation = [titleValidation, shortDescriptionValidation, contentValidation];

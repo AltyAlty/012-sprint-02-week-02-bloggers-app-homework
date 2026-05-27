@@ -52,5 +52,5 @@ const emailValidation = body('email')
   });
 
 /*Комбинируем вышеуказанные middlewares в один middleware "userCreateInputValidation", чтобы использовать его для
-проверки запросов на создание пользователей.*/
+проверки запросов по созданию пользователя.*/
 export const userCreateInputValidation = [loginValidation, passwordValidation, emailValidation];

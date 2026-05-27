@@ -5,11 +5,11 @@ import { HttpStatuses } from '../../../core/types/http-statuses';
 
 /*Middleware "accessTokenGuardMiddleware" отвечает за проверку AT в запросах.*/
 export const accessTokenGuardMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  /*Если в заголовках запроса нет заголовка "authorization", то сообщаем об отказе в аутентификации.*/
+  /*Если в заголовках запроса нет заголовка "authorization", то сообщаем об отказе в аутентификации клиенту.*/
   if (!req.headers.authorization) return res.sendStatus(HttpStatuses.Unauthorized_401);
   /*Если в заголовках запроса есть заголовок "authorization", то получаем из него тип авторизации и токен.*/
   const [authType, token]: string[] = req.headers.authorization.split(' ');
-  /*Если тип авторизации не "Bearer", то сообщаем об отказе в аутентификации.*/
+  /*Если тип авторизации не "Bearer", то сообщаем об отказе в аутентификации клиенту.*/
   if (authType !== 'Bearer') return res.sendStatus(HttpStatuses.Unauthorized_401);
   /*Если тип авторизации "Bearer", то просим адаптер "jwtService" верифицировать токен.*/
   const payload: { userId: string } | null = await jwtService.verifyToken(token);
@@ -23,6 +23,6 @@ export const accessTokenGuardMiddleware = async (req: Request, res: Response, ne
     return;
   }
 
-  /*Если верификация токена не прошла успешно, то сообщаем об отказе в аутентификации.*/
+  /*Если верификация токена не прошла успешно, то сообщаем об отказе в аутентификации клиенту.*/
   res.sendStatus(HttpStatuses.Unauthorized_401);
 };

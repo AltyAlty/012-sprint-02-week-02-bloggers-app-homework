@@ -1,4 +1,4 @@
-/*DTO для метаданных касательно пагинации.*/
+/*Output DTO для метаданных о пагинации.*/
 export type PaginationMetaDataOutputDTO = {
   page: number;
   pageSize: number;

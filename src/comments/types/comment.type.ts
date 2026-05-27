@@ -4,7 +4,7 @@ export type CommentatorInfoType = {
   userLogin: string;
 };
 
-/*Тип для комментариев.*/
+/*Тип для комментария.*/
 export type CommentType = {
   content: string;
   postId: string;

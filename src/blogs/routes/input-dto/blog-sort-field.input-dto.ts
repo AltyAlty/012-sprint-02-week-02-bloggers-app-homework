@@ -1,4 +1,4 @@
-/*DTO для разрешенных значений query-параметра "sortBy" для сортировки данных по блогам на странице при пагинации.*/
+/*Input DTO для разрешенных значений query-параметра "sortBy", используемого для сортировки блогов при пагинации.*/
 export enum BlogSortFieldInputDTO {
   CreatedAt = 'createdAt',
   Name = 'name',

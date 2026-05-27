@@ -1,4 +1,4 @@
-/*DTO для исходящих данных по блогам.*/
+/*Output DTO для блога.*/
 export type BlogOutputDTO = {
   id: string;
   name: string;

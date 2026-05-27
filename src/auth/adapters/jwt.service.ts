@@ -7,11 +7,8 @@ export const jwtService = {
   async createToken(userId: any): Promise<string> {
     return new Promise((resolve, reject) => {
       const onSignComplete = (error: Error | null, token: string | undefined): void => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(token as string);
-        }
+        if (error) reject(error);
+        else resolve(token as string);
       };
 
       jwt.sign(
@@ -36,9 +33,7 @@ export const jwtService = {
           console.log('Token verification error');
           console.log(error);
           resolve(null);
-        } else {
-          resolve(decoded as { userId: string });
-        }
+        } else resolve(decoded as { userId: string });
       };
 
       jwt.verify(token, SETTINGS.AC_SECRET as string, onVerifyComplete);

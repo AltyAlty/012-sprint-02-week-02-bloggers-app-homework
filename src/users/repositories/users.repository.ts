@@ -2,28 +2,8 @@ import { DeleteResult, InsertOneResult, ObjectId, WithId } from 'mongodb';
 import { usersCollection } from '../../db/mongodb/mongo.db';
 import { UserType } from '../types/user.type';
 
-/*Репозиторий "usersRepository" для работы с данными по пользователям в БД.*/
+/*Репозиторий "usersRepository" для работы с пользователями в БД.*/
 export const usersRepository = {
-  /*Метод "findByLogin()" для поиска пользователя по логину в БД.*/
-  async findByLogin(userLogin: string): Promise<WithId<UserType> | null> {
-    /*Просим коллекцию "usersCollection" найти пользователя по логину в БД.*/
-    const user: WithId<UserType> | null = await usersCollection.findOne({ login: userLogin });
-    /*Если пользователь не был найден, то возвращаем null.*/
-    if (!user) return null;
-    /*Если пользователь был найден, то возвращаем данные о нем.*/
-    return user;
-  },
-
-  /*Метод "findByEmail()" для поиска пользователя по email в БД.*/
-  async findByEmail(userEmail: string): Promise<WithId<UserType> | null> {
-    /*Просим коллекцию "usersCollection" найти пользователя по email в БД.*/
-    const user: WithId<UserType> | null = await usersCollection.findOne({ email: userEmail });
-    /*Если пользователь не был найден, то возвращаем null.*/
-    if (!user) return null;
-    /*Если пользователь был найден, то возвращаем данные о нем.*/
-    return user;
-  },
-
   /*Метод "findByLoginOrEmail()" для поиска пользователя по логину/email в БД.*/
   async findByLoginOrEmail(loginOrEmail: string): Promise<WithId<UserType> | null> {
     /*Просим коллекцию "usersCollection" найти пользователя по логину/email в БД.*/
@@ -33,13 +13,23 @@ export const usersRepository = {
 
     /*Если пользователь не был найден, то возвращаем null.*/
     if (!user) return null;
-    /*Если пользователь был найден, то возвращаем данные о нем.*/
+    /*Если пользователь был найден, то возвращаем его.*/
     return user;
   },
 
-  /*Метод "create()" для добавления нового пользователя в БД.*/
+  /*Метод "findById()" для поиска пользователя по ID в БД.*/
+  async findById(userId: string): Promise<WithId<UserType> | null> {
+    /*Просим коллекцию "usersCollection" найти пользователя по ID в БД.*/
+    const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(userId) });
+    /*Если пользователь не был найден, то возвращаем null.*/
+    if (!user) return null;
+    /*Если пользователь был найден, то возвращаем его.*/
+    return user;
+  },
+
+  /*Метод "create()" для добавления пользователя в БД.*/
   async create(newUser: UserType): Promise<string> {
-    /*Просим коллекцию "usersCollection" создать нового пользователя в БД.*/
+    /*Просим коллекцию "usersCollection" создать пользователя в БД.*/
     const insertResult: InsertOneResult<UserType> = await usersCollection.insertOne(newUser);
     /*Возвращаем ID созданного пользователя.*/
     return insertResult.insertedId.toString();
@@ -51,15 +41,5 @@ export const usersRepository = {
     const deleteResult: DeleteResult = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
     /*Возвращаем количество удаленных пользователей.*/
     return deleteResult.deletedCount;
-  },
-
-  /*Метод "findById()" для поиска данных по пользователю по ID в БД.*/
-  async findById(userId: string): Promise<WithId<UserType> | null> {
-    /*Просим коллекцию "usersCollection" найти данные по пользователю по ID в БД.*/
-    const user: WithId<UserType> | null = await usersCollection.findOne({ _id: new ObjectId(userId) });
-    /*Если данные по пользователю не были найдены, то возвращаем null.*/
-    if (!user) return null;
-    /*Если данные по пользователю были найдены, то возвращаем их.*/
-    return user;
   },
 };

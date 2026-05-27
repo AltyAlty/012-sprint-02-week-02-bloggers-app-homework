@@ -1,4 +1,4 @@
-/*DTO для исходящих данных для AT.*/
+/*Output DTO для AT.*/
 export type AccessTokenOutputDTO = {
   accessToken: string;
 };

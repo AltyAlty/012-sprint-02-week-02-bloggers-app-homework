@@ -4,11 +4,12 @@ import { setupApp } from './setup-app';
 import { SETTINGS } from './core/settings/settings';
 import { runDB } from './db/mongodb/mongo.db';
 
+/*Функция "bootstrap()" для запуска приложения.*/
 const bootstrap = async () => {
   /*Создаем экземпляр приложения Express.*/
   const app: Express = express();
-  /*Настраиваем экземпляр приложения Express при помощи функции "setupApp()".*/
-  setupApp(app);
+  /*Настраиваем экземпляр приложения Express.*/
+  await setupApp(app);
   /*Указываем порт для экземпляра приложения Express.*/
   const PORT: string | number = SETTINGS.PORT || 5001;
   /*Подключаемся к серверу MongoDB.*/
@@ -18,4 +19,5 @@ const bootstrap = async () => {
   return app;
 };
 
+/*Запускаем приложение.*/
 bootstrap();
