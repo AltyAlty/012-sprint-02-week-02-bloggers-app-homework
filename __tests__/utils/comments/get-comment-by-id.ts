@@ -1,0 +1,13 @@
+import { CommentOutputDTO } from '../../../src/comments/routes/output-dto/comment.output-dto';
+import { Express } from 'express';
+import request from 'supertest';
+import { SETTINGS } from '../../../src/core/settings/settings';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
+
+export const getCommentById = async (app: Express, commentId: string): Promise<CommentOutputDTO> => {
+  const getCommentResponse = await request(app)
+    .get(`${SETTINGS.COMMENTS_PATH}/${commentId}`)
+    .expect(HttpStatuses.Ok_200);
+
+  return getCommentResponse.body;
+};

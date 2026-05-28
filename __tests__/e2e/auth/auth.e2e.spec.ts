@@ -10,8 +10,10 @@ import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { createUser } from '../../utils/users/create-user';
 import { jwtService } from '../../../src/auth/adapters/jwt.service';
 import { usersService } from '../../../src/users/application/users.service';
+import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
+import { loginUser } from '../../utils/auth/login-user';
 
-describe('Auth API endpoints check', () => {
+describe('Auth API', () => {
   const app = express();
   setupApp(app);
   const adminToken = generateBasicAuthToken();
@@ -63,6 +65,35 @@ describe('Auth API endpoints check', () => {
     expect(decodedToken).not.toBeNull();
 
     const userResult = await usersService.findByLoginOrEmail(credentials01.login);
+    const userId = userResult.data!.userOutputWithPasswordHash.id;
+    expect(decodedToken?.userId).toEqual(userId);
+  });
+
+  it('✅ 002 should return user data when correct access token passed; GET /api/auth/login', async () => {
+    const createUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserInputDTO);
+
+    const loginResponse = await loginUser(app, {
+      loginOrEmail: createUserInputDTO.login,
+      password: createUserInputDTO.password,
+    });
+
+    const accessToken: string = loginResponse.accessToken;
+
+    const meResponse = await request(app)
+      .get(`${SETTINGS.AUTH_PATH}/me`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(HttpStatuses.Ok_200);
+
+    expect(meResponse.body).toMatchObject({
+      login: createUserInputDTO.login,
+      email: createUserInputDTO.email,
+    });
+
+    const decodedToken = await jwtService.verifyToken(accessToken);
+    expect(decodedToken).not.toBeNull();
+
+    const userResult = await usersService.findByLoginOrEmail(createUserInputDTO.login);
     const userId = userResult.data!.userOutputWithPasswordHash.id;
     expect(decodedToken?.userId).toEqual(userId);
   });

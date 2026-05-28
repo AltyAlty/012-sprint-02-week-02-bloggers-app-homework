@@ -1,0 +1,24 @@
+import { CreateCommentInPostInputDTO } from '../../../src/comments/routes/input-dto/create-comment-in-post.input-dto';
+import { Express } from 'express';
+import { CommentOutputDTO } from '../../../src/comments/routes/output-dto/comment.output-dto';
+import { getCreateCommentInPostInputDTO } from './get-create-comment-in-post-input-dto';
+import request from 'supertest';
+import { SETTINGS } from '../../../src/core/settings/settings';
+import { HttpStatuses } from '../../../src/core/types/http-statuses';
+
+export const createCommentInPost = async (
+  app: Express,
+  postId: string,
+  accessToken: string,
+  commentDTO?: CreateCommentInPostInputDTO
+): Promise<CommentOutputDTO> => {
+  const testCreateCommentData: CreateCommentInPostInputDTO = { ...getCreateCommentInPostInputDTO(), ...commentDTO };
+
+  const createCommentResponse = await request(app)
+    .post(`${SETTINGS.POSTS_PATH}/${postId}/comments`)
+    .set('Authorization', `Bearer ${accessToken}`)
+    .send(testCreateCommentData)
+    .expect(HttpStatuses.Created_201);
+
+  return createCommentResponse.body;
+};

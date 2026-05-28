@@ -10,7 +10,7 @@ import { createUser } from '../../utils/users/create-user';
 import request from 'supertest';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
 
-describe('Users API endpoints check', () => {
+describe('Users API', () => {
   const app = express();
   setupApp(app);
   const adminToken = generateBasicAuthToken();

@@ -1,7 +1,6 @@
 import request from 'supertest';
 import { Express } from 'express';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
-import { generateBasicAuthToken } from '../auth/generate-admin-auth-token';
 import { SETTINGS } from '../../../src/core/settings/settings';
 import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-dto';
 

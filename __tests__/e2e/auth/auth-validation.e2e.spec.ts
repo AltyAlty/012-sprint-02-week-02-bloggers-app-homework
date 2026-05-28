@@ -8,8 +8,12 @@ import { clearDb } from '../../utils/db/clear-db';
 import request from 'supertest';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { createUser } from '../../utils/users/create-user';
+import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
+import { loginUser } from '../../utils/auth/login-user';
+import { jwtService } from '../../../src/auth/adapters/jwt.service';
+import { usersService } from '../../../src/users/application/users.service';
 
-describe('Auth API body and auth validation checks', () => {
+describe('Auth API validation', () => {
   const app = express();
   setupApp(app);
   const adminToken = generateBasicAuthToken();
@@ -76,5 +80,52 @@ describe('Auth API body and auth validation checks', () => {
     await checkUserAuthentication(credentials01.email, credentials02.password, HttpStatuses.Unauthorized_401);
     await checkUserAuthentication(credentials02.login, credentials01.password, HttpStatuses.Unauthorized_401);
     await checkUserAuthentication(credentials02.email, credentials01.password, HttpStatuses.Unauthorized_401);
+  });
+
+  it('❌ 003 should not return user data without proper access token; GET /api/auth/login', async () => {
+    const createUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserInputDTO);
+
+    const loginResponse = await loginUser(app, {
+      loginOrEmail: createUserInputDTO.login,
+      password: createUserInputDTO.password,
+    });
+
+    const correctAccessToken: string = loginResponse.accessToken;
+    const incorrectAccessToken01: string = `${correctAccessToken}123`;
+    const incorrectAccessToken02: string = ``;
+    const incorrectAccessToken03: string = `zxc123ert`;
+    const incorrectAccessToken04: null = null;
+    const incorrectAccessToken05: number = 123456789;
+
+    const checkMe = async (accessToken: any) => {
+      await request(app)
+        .get(`${SETTINGS.AUTH_PATH}/me`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(HttpStatuses.Unauthorized_401);
+    };
+
+    await checkMe(incorrectAccessToken01);
+    await checkMe(incorrectAccessToken02);
+    await checkMe(incorrectAccessToken03);
+    await checkMe(incorrectAccessToken04);
+    await checkMe(incorrectAccessToken05);
+
+    const meResponse = await request(app)
+      .get(`${SETTINGS.AUTH_PATH}/me`)
+      .set('Authorization', `Bearer ${correctAccessToken}`)
+      .expect(HttpStatuses.Ok_200);
+
+    expect(meResponse.body).toMatchObject({
+      login: createUserInputDTO.login,
+      email: createUserInputDTO.email,
+    });
+
+    const decodedToken = await jwtService.verifyToken(correctAccessToken);
+    expect(decodedToken).not.toBeNull();
+
+    const userResult = await usersService.findByLoginOrEmail(createUserInputDTO.login);
+    const userId = userResult.data!.userOutputWithPasswordHash.id;
+    expect(decodedToken?.userId).toEqual(userId);
   });
 });

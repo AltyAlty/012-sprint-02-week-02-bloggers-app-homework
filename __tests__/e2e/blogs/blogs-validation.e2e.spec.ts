@@ -18,7 +18,7 @@ import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-
 import { CreatePostInputDTO } from '../../../src/posts/routes/input-dto/create-post.input-dto';
 import { getUpdateBlogInputDTO } from '../../utils/blogs/get-update-blog-input-dto';
 
-describe('Blogs API ID, body and auth validation checks', () => {
+describe('Blogs API validation', () => {
   const app = express();
   setupApp(app);
   const adminToken = generateBasicAuthToken();

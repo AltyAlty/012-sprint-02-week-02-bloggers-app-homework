@@ -19,7 +19,7 @@ import { CreatePostInputDTO } from '../../../src/posts/routes/input-dto/create-p
 import { getUpdateBlogInputDTO } from '../../utils/blogs/get-update-blog-input-dto';
 
 /*Тестовый набор.*/
-describe('Blogs API endpoints check', () => {
+describe('Blogs API', () => {
   /*Создаем экземпляр приложения Express.*/
   const app = express();
   /*Настраиваем экземпляр приложения Express при помощи функции "setupApp()".*/

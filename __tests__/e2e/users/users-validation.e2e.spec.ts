@@ -12,7 +12,7 @@ import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-u
 import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
 import { UserOutputDTO } from '../../../src/users/routes/output-dto/user.output-dto';
 
-describe('Users API ID, body and auth validation checks', () => {
+describe('Users API validation', () => {
   const app = express();
   setupApp(app);
   const adminToken = generateBasicAuthToken();
