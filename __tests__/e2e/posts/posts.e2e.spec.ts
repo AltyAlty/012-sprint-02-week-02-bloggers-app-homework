@@ -1,62 +1,63 @@
 import 'dotenv/config';
-import request from 'supertest';
-import express from 'express';
-import { setupApp } from '../../../src/setup-app';
-import { generateBasicAuthToken } from '../../utils/auth/generate-admin-auth-token';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
-import { clearDb } from '../../utils/db/clear-db';
-import { runDB, stopDb } from '../../../src/db/mongodb/mongo.db';
 import { SETTINGS } from '../../../src/core/settings/settings';
-import { createBlog } from '../../utils/blogs/create-blog';
 import { createPost } from '../../utils/posts/create-post';
-import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-dto';
 import { PostOutputDTO } from '../../../src/posts/routes/output-dto/post.output-dto';
 import { getPostById } from '../../utils/posts/get-post-by-id';
 import { UpdatePostInputDTO } from '../../../src/posts/routes/input-dto/update-post.input-dto';
 import { updatePostById } from '../../utils/posts/update-post-by-id';
 import { getUpdatePostInputDTO } from '../../utils/posts/get-update-post-input-dto';
 import { loginUser } from '../../utils/auth/login-user';
-import { createCommentInPost } from '../../utils/comments/create-comment-in-post';
-import { CreateCommentInPostInputDTO } from '../../../src/comments/routes/input-dto/create-comment-in-post.input-dto';
+import { createCommentInPost } from '../../utils/posts/create-comment-in-post';
 import { CommentOutputDTO } from '../../../src/comments/routes/output-dto/comment.output-dto';
 import { createUser } from '../../utils/users/create-user';
-import { UserOutputDTO } from '../../../src/users/routes/output-dto/user.output-dto';
+import { getPostsList } from '../../utils/posts/get-posts-list';
+import { doBeforeTests } from '../../utils/common/do-before-tests';
+import { PaginatedPostsListOutputDTO } from '../../../src/posts/routes/output-dto/paginated-posts-list.output-dto';
+import { deletePostById } from '../../utils/posts/delete-post-by-id';
+import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
+import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-user.input-dto';
+import { getCommentById } from '../../utils/comments/get-comment-by-id';
+import { getCommentsListByPostId } from '../../utils/posts/get-comments-list-by-post-id';
+import { PaginatedCommentsListOutputDTO } from '../../../src/comments/routes/output-dto/paginated-comments-list.output-dto';
 
 describe('Posts API', () => {
-  const app = express();
-  setupApp(app);
-  const adminToken = generateBasicAuthToken();
-
-  beforeAll(async () => {
-    await runDB(SETTINGS.MONGO_URL, SETTINGS.TEST_DB_NAME);
-    await clearDb(app);
-  });
-
-  beforeEach(async () => await clearDb(app));
-
-  afterAll(async () => {
-    await clearDb(app);
-    await stopDb();
-  });
+  const app = doBeforeTests();
 
   it('✅ 001 should create a post; POST /api/posts', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
-    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatuses.Ok_200);
-    expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getPostsListResponse.body.items.length).toBe(1);
-    expect(getPostsListResponse.body.totalCount).toBe(1);
-    expect(getPostsListResponse.body.items[0]).toEqual({ ...createdPost });
+    const createdPostId: string = createdPost.id;
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
+
+    expect(getPostByIdResponse).toEqual(createdPost);
   });
 
-  it('✅ 002 should return a list of posts; GET /api/posts', async () => {
+  it('✅ 002 should return a post by ID; GET /api/posts/:id', async () => {
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
+
+    expect(getPostByIdResponse).toEqual(createdPost);
+  });
+
+  it('✅ 003 should return a list of posts; GET /api/posts', async () => {
     await Promise.all([createPost(app), createPost(app)]);
-    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatuses.Ok_200);
-    expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getPostsListResponse.body.items.length).toBe(2);
-    expect(getPostsListResponse.body.totalCount).toBe(2);
+
+    const getPostsListResponse: PaginatedPostsListOutputDTO = await getPostsList(app);
+
+    expect(getPostsListResponse.items).toBeInstanceOf(Array);
+    expect(getPostsListResponse.items.length).toBe(2);
+    expect(getPostsListResponse.totalCount).toBe(2);
   });
 
-  it('✅ 003 should return a list of posts when correct pagination settings passed; GET /api/posts', async () => {
+  it('✅ 004 should return a list of posts when correct pagination settings passed; GET /api/posts', async () => {
+    const pageSize: number = 5;
+    const pageNumber: number = 1;
+    const sortDirection: string = 'asc';
+    const sortBy: string = 'title';
+    const url: string = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
+
     await Promise.all([
       createPost(app),
       createPost(app),
@@ -66,36 +67,20 @@ describe('Posts API', () => {
       createPost(app),
     ]);
 
-    const pageSize = 5;
-    const pageNumber = 1;
-    const sortDirection = 'asc';
-    const sortBy = 'title';
+    const getPostsListResponse: PaginatedPostsListOutputDTO = await getPostsList(app, url);
 
-    const getPostsListResponse = await request(app)
-      .get(
-        `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`
-      )
-      .expect(HttpStatuses.Ok_200);
-
-    expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getPostsListResponse.body.items.length).toBe(5);
-    expect(getPostsListResponse.body.totalCount).toBe(6);
+    expect(getPostsListResponse.items).toBeInstanceOf(Array);
+    expect(getPostsListResponse.items.length).toBe(5);
+    expect(getPostsListResponse.totalCount).toBe(6);
   });
 
-  it('✅ 004 should return a post specified by ID; GET /api/posts/:id', async () => {
+  it('✅ 005 should update a post by ID; PUT /api/posts/:id', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
-    expect(getPostByIdResponse).toEqual({ ...createdPost });
-  });
+    const createdPostBlogId: string = createdPost.blogId;
+    const updatePostData: UpdatePostInputDTO = getUpdatePostInputDTO(createdPostBlogId);
 
-  it('✅ 005 should update a post specified by ID; PUT /api/posts/:id', async () => {
-    const createdBlog: BlogOutputDTO = await createBlog(app);
-    const createdBlogId: string = createdBlog.id;
-    const createdPost: PostOutputDTO = await createPost(app, undefined, createdBlogId);
-    const createdPostId: string = createdPost.id;
-    const updatePostData: UpdatePostInputDTO = getUpdatePostInputDTO(createdBlogId);
-    await updatePostById(app, createdPostId, createdBlogId, updatePostData);
+    await updatePostById(app, createdPostId, createdPostBlogId, updatePostData);
     const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
 
     expect(getPostByIdResponse).toEqual({
@@ -103,88 +88,100 @@ describe('Posts API', () => {
       title: updatePostData.title,
       shortDescription: updatePostData.shortDescription,
       content: updatePostData.content,
-      blogId: createdBlogId,
-      blogName: createdBlog.name,
-      createdAt: expect.any(String),
+      blogId: createdPostBlogId,
+      blogName: createdPost.blogName,
+      createdAt: createdPost.createdAt,
     });
   });
 
-  it('✅ 006 should delete a post specified by ID; DELETE /api/posts/:id', async () => {
+  it('✅ 006 should delete a post by ID; DELETE /api/posts/:id', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
 
-    await request(app)
-      .delete(`${SETTINGS.POSTS_PATH}/${createdPostId}`)
-      .set('Authorization', adminToken)
-      .expect(HttpStatuses.NoContent_204);
-
-    await request(app).get(`${SETTINGS.POSTS_PATH}/${createdPostId}`).expect(HttpStatuses.NotFound_404);
+    await deletePostById(app, createdPostId);
+    await getPostById(app, createdPostId, HttpStatuses.NotFound_404);
   });
 
-  it('✅ 007 should create a comment in a post specified by ID; POST /api/posts/:postId/comments', async () => {
+  it('✅ 007 should create a comment for a post by ID; POST /api/posts/:postId/comments', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    const createdUser01: UserOutputDTO = await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    const createdUser = await createUser(app, createUserData);
 
-    const createdComment: CommentOutputDTO = await createCommentInPost(
-      app,
-      createdPostId,
-      accessToken,
-      createCommentDTO
-    );
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
-    expect(createdComment.content).toEqual(createCommentDTO.content);
-    expect(createdComment.commentatorInfo.userLogin).toEqual(createdUser01.login);
-    expect(createdComment.commentatorInfo.userId).toEqual(createdUser01.id);
+    const createdComment: CommentOutputDTO = await createCommentInPost(app, createdPostId, accessToken);
+    const createdCommentId = createdComment.id;
+    const getCommentByIdResponse: CommentOutputDTO = await getCommentById(app, createdCommentId);
+
+    expect(getCommentByIdResponse).toEqual(createdComment);
+    expect(getCommentByIdResponse.id).toBe(createdCommentId);
+    expect(getCommentByIdResponse.commentatorInfo.userId).toBe(createdUser.id);
+    expect(getCommentByIdResponse.commentatorInfo.userLogin).toBe(createdUser.login);
   });
 
-  it('✅ 008 should return a list of comments in a post specified by ID; GET /api/posts/:postId/comments', async () => {
+  it('✅ 008 should return a list of comments for a post by ID; GET /api/posts/:postId/comments', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO01: CreateCommentInPostInputDTO = { content: 'some comment content 001' };
-    const createCommentDTO02: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
-    const createCommentDTO03: CreateCommentInPostInputDTO = { content: 'some comment content 003' };
-    const createCommentDTO04: CreateCommentInPostInputDTO = { content: 'some comment content 004' };
-    const createCommentDTO05: CreateCommentInPostInputDTO = { content: 'some comment content 005' };
-    const createCommentDTO06: CreateCommentInPostInputDTO = { content: 'some comment content 006' };
-    const createCommentDTO07: CreateCommentInPostInputDTO = { content: 'some comment content 007' };
-    const createCommentDTO08: CreateCommentInPostInputDTO = { content: 'some comment content 008' };
-    const createCommentDTO09: CreateCommentInPostInputDTO = { content: 'some comment content 009' };
-    const createCommentDTO10: CreateCommentInPostInputDTO = { content: 'some comment content 010' };
-    const createCommentDTO11: CreateCommentInPostInputDTO = { content: 'some comment content 011' };
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const createComment = async (createCommentDTO: CreateCommentInPostInputDTO): Promise<CommentOutputDTO> => {
-      return await createCommentInPost(app, createdPostId, accessToken, createCommentDTO);
-    };
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
     await Promise.all([
-      createComment(createCommentDTO01),
-      createComment(createCommentDTO02),
-      createComment(createCommentDTO03),
-      createComment(createCommentDTO04),
-      createComment(createCommentDTO05),
-      createComment(createCommentDTO06),
-      createComment(createCommentDTO07),
-      createComment(createCommentDTO08),
-      createComment(createCommentDTO09),
-      createComment(createCommentDTO10),
-      createComment(createCommentDTO11),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
     ]);
 
-    const getCommentsListResponse = await request(app)
-      .get(`${SETTINGS.POSTS_PATH}/${createdPostId}/comments`)
-      .expect(HttpStatuses.Ok_200);
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
+      app,
+      createdPostId
+    );
 
-    expect(getCommentsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getCommentsListResponse.body.items.length).toBe(10);
-    expect(getCommentsListResponse.body.totalCount).toBe(11);
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(2);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(2);
+  });
+
+  it('✅ 009 should return a list of comments for a post by ID when correct pagination settings passed; GET /api/posts/:postId/comments', async () => {
+    const pageSize: number = 5;
+    const pageNumber: number = 1;
+    const sortDirection: string = 'asc';
+    const sortBy: string = 'content';
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+    const url: string = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
+
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
+
+    await Promise.all([
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+    ]);
+
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
+      app,
+      createdPostId,
+      url
+    );
+
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(5);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(6);
   });
 });

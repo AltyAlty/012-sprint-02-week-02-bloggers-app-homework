@@ -1,7 +1,5 @@
 import { CreateBlogInputDTO } from '../../../src/blogs/routes/input-dto/create-blog.input-dto';
 
-/*Функция "getCreateBlogInputDTO()", возвращающая DTO с корректными данными для создания блога, для целей
-тестирования.*/
 export const getCreateBlogInputDTO = (): CreateBlogInputDTO => {
   return {
     name: 'name 01',

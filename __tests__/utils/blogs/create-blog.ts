@@ -7,18 +7,21 @@ import { SETTINGS } from '../../../src/core/settings/settings';
 import { CreateBlogInputDTO } from '../../../src/blogs/routes/input-dto/create-blog.input-dto';
 import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-dto';
 
-/*Функция "createBlog()", создающая блог и возвращающая данные о нем, для целей тестирования.*/
-export const createBlog = async (app: Express, blogDTO?: CreateBlogInputDTO): Promise<BlogOutputDTO> => {
-  /*Получаем DTO с корректными данными для создания блога для целей тестирования.*/
+export const createBlog = async (
+  app: Express,
+  blogDTO?: CreateBlogInputDTO | any,
+  expectedStatus?: HttpStatuses,
+  basicAuthToken?: string
+): Promise<BlogOutputDTO> => {
   const testCreateBlogData: CreateBlogInputDTO = { ...getCreateBlogInputDTO(), ...blogDTO };
+  const testStatus = expectedStatus ?? HttpStatuses.Created_201;
+  const testBasicAuthToken = basicAuthToken ?? generateBasicAuthToken();
 
-  /*Создаем блог.*/
   const createBlogResponse = await request(app)
     .post(SETTINGS.BLOGS_PATH)
-    .set('Authorization', generateBasicAuthToken())
+    .set('Authorization', testBasicAuthToken)
     .send(testCreateBlogData)
-    .expect(HttpStatuses.Created_201);
+    .expect(testStatus);
 
-  /*Возвращаем тело ответа.*/
   return createBlogResponse.body;
 };

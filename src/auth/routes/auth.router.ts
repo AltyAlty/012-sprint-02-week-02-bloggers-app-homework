@@ -9,7 +9,7 @@ import { getAuthDataByTokenHandler } from './handlers/get-auth-data-by-token.han
 export const authRouter: Router = Router({});
 /*Конфигурируем роутер "authRouter".*/
 authRouter
-  /*POST-запрос по аутентификации пользователя по логину/email.*/
+  /*001. POST-запрос по аутентификации пользователя по логину/email.*/
   .post('/login', authUserPostInputValidation, inputValidationResultMiddleware, authByLoginOrEmailHandler)
-  /*GET-запрос по получению данных пользователя по токену.*/
+  /*002. GET-запрос по получению данных пользователя по токену.*/
   .get('/me', accessTokenGuardMiddleware, getAuthDataByTokenHandler);

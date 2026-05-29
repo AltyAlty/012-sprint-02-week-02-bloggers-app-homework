@@ -21,7 +21,7 @@ export const postsRouter: Router = Router({});
 
 /*Конфигурируем роутер "postsRouter".*/
 postsRouter
-  /*GET-запрос по получению комментариев с пагинацией в посте по ID, используя URI-параметры.*/
+  /*001. GET-запрос по получению комментариев с пагинацией в посте по ID, используя URI-параметры.*/
   .get(
     '/:postId/comments',
     postIdValidation,
@@ -29,7 +29,7 @@ postsRouter
     inputValidationResultMiddleware,
     getCommentsListByPostIdHandler
   )
-  /*POST-запрос по добавлению комментария в пост по ID, используя URI-параметры.*/
+  /*002. POST-запрос по добавлению комментария в пост по ID, используя URI-параметры.*/
   .post(
     '/:postId/comments',
     accessTokenGuardMiddleware,
@@ -38,13 +38,13 @@ postsRouter
     inputValidationResultMiddleware,
     createCommentInPostByIdHandler
   )
-  /*GET-запрос по получению постов с пагинацией, используя query-параметры.*/
+  /*003. GET-запрос по получению постов с пагинацией, используя query-параметры.*/
   .get('', paginationValidationMiddleware(PostSortFieldInputDTO), inputValidationResultMiddleware, getPostsListHandler)
-  /*POST-запрос по добавлению поста.*/
+  /*004. POST-запрос по добавлению поста.*/
   .post('', basicAuthGuardMiddleware, postCreateInputValidation, inputValidationResultMiddleware, createPostHandler)
-  /*GET-запрос по получению поста по ID, используя URI-параметры.*/
+  /*005. GET-запрос по получению поста по ID, используя URI-параметры.*/
   .get('/:id', idValidation, inputValidationResultMiddleware, getPostByIdHandler)
-  /*PUT-запрос по изменению поста по ID, используя URI-параметры.*/
+  /*006. PUT-запрос по изменению поста по ID, используя URI-параметры.*/
   .put(
     '/:id',
     basicAuthGuardMiddleware,
@@ -53,5 +53,5 @@ postsRouter
     inputValidationResultMiddleware,
     updatePostByIdHandler
   )
-  /*DELETE-запрос по удалению поста по ID, используя URI-параметры.*/
+  /*007. DELETE-запрос по удалению поста по ID, используя URI-параметры.*/
   .delete('/:id', basicAuthGuardMiddleware, idValidation, inputValidationResultMiddleware, deletePostByIdHandler);

@@ -10,18 +10,22 @@ import { createBlog } from '../blogs/create-blog';
 
 export const createPost = async (
   app: Express,
-  postDTO?: CreatePostInputDTO,
-  blogId?: string
+  postDTO?: CreatePostInputDTO | any,
+  blogId?: string | any,
+  expectedStatus?: HttpStatuses,
+  basicAuthToken?: string
 ): Promise<PostOutputDTO> => {
   const newBlog = blogId ? null : await createBlog(app);
-  const actualBlogId = newBlog ? newBlog.id : blogId;
-  const testCreatePostData = { ...getCreatePostInputDTO(actualBlogId!), ...postDTO };
+  const testBlogId = newBlog ? newBlog.id : blogId;
+  const testCreatePostData = { ...getCreatePostInputDTO(testBlogId!), ...postDTO };
+  const testStatus = expectedStatus ?? HttpStatuses.Created_201;
+  const testBasicAuthToken = basicAuthToken ?? generateBasicAuthToken();
 
   const createPostResponse = await request(app)
     .post(SETTINGS.POSTS_PATH)
-    .set('Authorization', generateBasicAuthToken())
+    .set('Authorization', testBasicAuthToken)
     .send(testCreatePostData)
-    .expect(HttpStatuses.Created_201);
+    .expect(testStatus);
 
   return createPostResponse.body;
 };

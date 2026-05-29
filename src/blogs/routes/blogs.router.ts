@@ -20,11 +20,11 @@ export const blogsRouter: Router = Router({});
 
 /*Конфигурируем роутер "blogsRouter".*/
 blogsRouter
-  /*GET-запрос по получению блогов с пагинацией, используя query-параметры.*/
+  /*001. GET-запрос по получению блогов с пагинацией, используя query-параметры.*/
   .get('', paginationValidationMiddleware(BlogSortFieldInputDTO), inputValidationResultMiddleware, getBlogsListHandler)
-  /*POST-запрос по добавлению блога.*/
+  /*002. POST-запрос по добавлению блога.*/
   .post('', basicAuthGuardMiddleware, blogCreateInputValidation, inputValidationResultMiddleware, createBlogHandler)
-  /*GET-запрос по получению постов с пагинацией в блоге по ID, используя URI-параметры.*/
+  /*003. GET-запрос по получению постов с пагинацией в блоге по ID, используя URI-параметры.*/
   .get(
     '/:blogId/posts',
     blogIdValidation,
@@ -32,7 +32,7 @@ blogsRouter
     inputValidationResultMiddleware,
     getPostsListByBlogIdHandler
   )
-  /*POST-запрос по добавлению поста в блог по ID, используя URI-параметры.*/
+  /*004. POST-запрос по добавлению поста в блог по ID, используя URI-параметры.*/
   .post(
     '/:blogId/posts',
     basicAuthGuardMiddleware,
@@ -41,10 +41,10 @@ blogsRouter
     inputValidationResultMiddleware,
     createPostInBlogByIdHandler
   )
-  /*GET-запрос по получению блога по ID, используя URI-параметры. При помощи ":" Express позволяет указывать переменные
+  /*005. GET-запрос по получению блога по ID, используя URI-параметры. При помощи ":" Express позволяет указывать переменные
   в пути. Такие переменные доступны через объект "req.params".*/
   .get('/:id', idValidation, inputValidationResultMiddleware, getBlogByIdHandler)
-  /*PUT-запрос по изменению блога по ID, используя URI-параметры.*/
+  /*006. PUT-запрос по изменению блога по ID, используя URI-параметры.*/
   .put(
     '/:id',
     basicAuthGuardMiddleware,
@@ -53,5 +53,5 @@ blogsRouter
     inputValidationResultMiddleware,
     updateBlogByIdHandler
   )
-  /*DELETE-запрос по удалению блога по ID, используя URI-параметры.*/
+  /*007. DELETE-запрос по удалению блога по ID, используя URI-параметры.*/
   .delete('/:id', basicAuthGuardMiddleware, idValidation, inputValidationResultMiddleware, deleteBlogByIdHandler);

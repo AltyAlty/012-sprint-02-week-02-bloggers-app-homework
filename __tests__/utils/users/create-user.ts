@@ -7,14 +7,21 @@ import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-u
 import { UserOutputDTO } from '../../../src/users/routes/output-dto/user.output-dto';
 import { getCreateUserInputDTO } from './get-create-user-input-dto';
 
-export const createUser = async (app: Express, userDTO?: CreateUserInputDTO): Promise<UserOutputDTO> => {
+export const createUser = async (
+  app: Express,
+  userDTO?: CreateUserInputDTO,
+  expectedStatus?: HttpStatuses,
+  basicAuthToken?: string
+): Promise<UserOutputDTO> => {
   const testCreateUserData: CreateUserInputDTO = { ...getCreateUserInputDTO(), ...userDTO };
+  const testStatus = expectedStatus ?? HttpStatuses.Created_201;
+  const testBasicAuthToken = basicAuthToken ?? generateBasicAuthToken();
 
   const createUserResponse = await request(app)
     .post(SETTINGS.USERS_PATH)
-    .set('Authorization', generateBasicAuthToken())
+    .set('Authorization', testBasicAuthToken)
     .send(testCreateUserData)
-    .expect(HttpStatuses.Created_201);
+    .expect(testStatus);
 
   return createUserResponse.body;
 };

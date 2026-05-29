@@ -1,11 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
-import request from 'supertest';
-import { setupApp } from '../../../src/setup-app';
-import { generateBasicAuthToken } from '../../utils/auth/generate-admin-auth-token';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
-import { clearDb } from '../../utils/db/clear-db';
-import { runDB, stopDb } from '../../../src/db/mongodb/mongo.db';
 import { SETTINGS } from '../../../src/core/settings/settings';
 import { createBlog } from '../../utils/blogs/create-blog';
 import { createPost } from '../../utils/posts/create-post';
@@ -14,502 +8,499 @@ import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-
 import { CreatePostInputDTO } from '../../../src/posts/routes/input-dto/create-post.input-dto';
 import { PostOutputDTO } from '../../../src/posts/routes/output-dto/post.output-dto';
 import { getPostById } from '../../utils/posts/get-post-by-id';
-import { UpdatePostInputDTO } from '../../../src/posts/routes/input-dto/update-post.input-dto';
-import { getUpdatePostInputDTO } from '../../utils/posts/get-update-post-input-dto';
 import { createUser } from '../../utils/users/create-user';
 import { loginUser } from '../../utils/auth/login-user';
 import { CreateCommentInPostInputDTO } from '../../../src/comments/routes/input-dto/create-comment-in-post.input-dto';
-import { CommentOutputDTO } from '../../../src/comments/routes/output-dto/comment.output-dto';
-import { createCommentInPost } from '../../utils/comments/create-comment-in-post';
+import { createCommentInPost } from '../../utils/posts/create-comment-in-post';
+import { doBeforeTests } from '../../utils/common/do-before-tests';
+import { getPostsList } from '../../utils/posts/get-posts-list';
+import { PaginatedPostsListOutputDTO } from '../../../src/posts/routes/output-dto/paginated-posts-list.output-dto';
+import { updatePostById } from '../../utils/posts/update-post-by-id';
+import { deletePostById } from '../../utils/posts/delete-post-by-id';
+import { getCommentsListByPostId } from '../../utils/posts/get-comments-list-by-post-id';
+import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-user.input-dto';
+import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
+import { PaginatedCommentsListOutputDTO } from '../../../src/comments/routes/output-dto/paginated-comments-list.output-dto';
+import { UpdatePostInputDTO } from '../../../src/posts/routes/input-dto/update-post.input-dto';
+import { getUpdatePostInputDTO } from '../../utils/posts/get-update-post-input-dto';
 
 describe('Posts API validation', () => {
-  const app = express();
-  setupApp(app);
-  const adminToken = generateBasicAuthToken();
+  const app = doBeforeTests();
 
-  beforeAll(async () => {
-    await runDB(SETTINGS.MONGO_URL, SETTINGS.TEST_DB_NAME);
-    await clearDb(app);
+  it('❌ 001 should not create a post without proper basic authorization; POST /api/posts', async () => {
+    await createPost(app, undefined, undefined, HttpStatuses.Unauthorized_401, 'token');
+    const getPostsListResponse: PaginatedPostsListOutputDTO = await getPostsList(app);
+
+    expect(getPostsListResponse.items).toBeInstanceOf(Array);
+    expect(getPostsListResponse.items.length).toBe(0);
+    expect(getPostsListResponse.totalCount).toBe(0);
   });
 
-  beforeEach(async () => await clearDb(app));
+  it('❌ 002 should not create a post when incorrect body passed; POST /api/posts', async () => {
+    const createdBlog: BlogOutputDTO = await createBlog(app);
+    const createdBlogId: string = createdBlog.id;
+    const correctCreatePostData: CreatePostInputDTO = getCreatePostInputDTO(createdBlogId);
+    const incorrectTitle_01: string = '';
+    const incorrectTitle_02: string = '   ';
+    const incorrectTitle_03: string = '0123456789012345678901234567890';
+    const incorrectTitle_04: string = '012345678901234567890123456789000000';
+    const incorrectTitle_05: null = null;
+    const incorrectShortDescription_01: string = '';
+    const incorrectShortDescription_02: string = '   ';
+    const incorrectShortDescription_03: null = null;
+    const incorrectContent_01: string = '';
+    const incorrectContent_02: string = '   ';
+    const incorrectContent_03: null = null;
+    const incorrectBlogId_01: number = 2;
+    const incorrectBlogId_02: null = null;
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-  afterAll(async () => {
-    await clearDb(app);
-    await stopDb();
+    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_01 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_02 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_03 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_04 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_05 }, createdBlogId, testStatus);
+
+    await createPost(
+      app,
+      { ...correctCreatePostData, shortDescription: incorrectShortDescription_01 },
+      createdBlogId,
+      testStatus
+    );
+
+    await createPost(
+      app,
+      { ...correctCreatePostData, shortDescription: incorrectShortDescription_02 },
+      createdBlogId,
+      testStatus
+    );
+
+    await createPost(
+      app,
+      { ...correctCreatePostData, shortDescription: incorrectShortDescription_03 },
+      createdBlogId,
+      testStatus
+    );
+
+    await createPost(app, { ...correctCreatePostData, content: incorrectContent_01 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, content: incorrectContent_02 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, content: incorrectContent_03 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, blogId: incorrectBlogId_01 }, createdBlogId, testStatus);
+    await createPost(app, { ...correctCreatePostData, blogId: incorrectBlogId_02 }, createdBlogId, testStatus);
+    const getPostsListResponse: PaginatedPostsListOutputDTO = await getPostsList(app);
+
+    expect(getPostsListResponse.items).toBeInstanceOf(Array);
+    expect(getPostsListResponse.items.length).toBe(0);
+    expect(getPostsListResponse.totalCount).toBe(0);
   });
 
-  it('❌ 001 should not return a list of posts when incorrect pagination settings passed; GET /api/posts', async () => {
+  it('❌ 003 should not return a post by incorrect ID; GET /api/posts/:id', async () => {
+    const incorrectPostId_01: string = 'ABC';
+    const incorrectPostId_02: number = 2;
+    const incorrectPostId_03: null = null;
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
+
+    await getPostById(app, incorrectPostId_01, testStatus);
+    await getPostById(app, incorrectPostId_02, testStatus);
+    await getPostById(app, incorrectPostId_03, testStatus);
+
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
+    expect(getPostByIdResponse).toEqual(createdPost);
+  });
+
+  it('❌ 004 should not return a list of posts when incorrect pagination settings passed; GET /api/posts', async () => {
+    const correctPageSize: number = 5;
+    const correctPageNumber: number = 1;
+    const correctSortDirection: string = 'asc';
+    const correctSortBy: string = 'title';
+    const correctUrl: string = `${SETTINGS.POSTS_PATH}?pageSize=${correctPageSize}&pageNumber=${correctPageNumber}&sortDirection=${correctSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectPageSize: number = 101;
+    const incorrectPageNumber: number = -1;
+    const incorrectSortDirection: string = 'cas';
+    const incorrectSortBy: string = 'description';
+    const incorrectUrl_01: string = `${SETTINGS.POSTS_PATH}?pageSize=${incorrectPageSize}&pageNumber=${correctPageNumber}&sortDirection=${correctSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectUrl_02: string = `${SETTINGS.POSTS_PATH}?pageSize=${correctPageSize}&pageNumber=${incorrectPageNumber}&sortDirection=${correctSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectUrl_03: string = `${SETTINGS.POSTS_PATH}?pageSize=${correctPageSize}&pageNumber=${correctPageNumber}&sortDirection=${incorrectSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectUrl_04: string = `${SETTINGS.POSTS_PATH}?pageSize=${correctPageSize}&pageNumber=${correctPageNumber}&sortDirection=${correctSortDirection}&sortBy=${incorrectSortBy}`;
     await Promise.all([createPost(app), createPost(app)]);
-    const pageSize = 5;
-    const pageNumber = 1;
-    const sortDirection = 'asc';
-    const sortBy = 'title';
-    const correctQuery = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    const incorrectPageSize = 101;
-    const incorrectPageNumber = -1;
-    const incorrectSortDirection = 'cas';
-    const incorrectSortBy = 'description';
-    const incorrectQuery1 = `${SETTINGS.POSTS_PATH}?pageSize=${incorrectPageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
-    const incorrectQuery2 = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${incorrectPageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
-    const incorrectQuery3 = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${incorrectSortDirection}&sortBy=${sortBy}`;
-    const incorrectQuery4 = `${SETTINGS.POSTS_PATH}?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${incorrectSortBy}`;
+    await getPostsList(app, incorrectUrl_01, testStatus);
+    await getPostsList(app, incorrectUrl_02, testStatus);
+    await getPostsList(app, incorrectUrl_03, testStatus);
+    await getPostsList(app, incorrectUrl_04, testStatus);
+    const getPostsListResponse: PaginatedPostsListOutputDTO = await getPostsList(app, correctUrl);
 
-    await request(app).get(incorrectQuery1).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectQuery2).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectQuery3).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectQuery4).expect(HttpStatuses.BadRequest_400);
-
-    const getPostsListResponse = await request(app).get(correctQuery).expect(HttpStatuses.Ok_200);
-    expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getPostsListResponse.body.items.length).toBe(2);
-    expect(getPostsListResponse.body.totalCount).toBe(2);
+    expect(getPostsListResponse.items).toBeInstanceOf(Array);
+    expect(getPostsListResponse.items.length).toBe(2);
+    expect(getPostsListResponse.totalCount).toBe(2);
   });
 
-  it('❌ 002 should not create a post without proper basic authorization; POST /api/posts', async () => {
-    const createdBlog: BlogOutputDTO = await createBlog(app);
-    const createdBlogId: string = createdBlog.id;
-    const correctCreatePostData: CreatePostInputDTO = getCreatePostInputDTO(createdBlogId);
-    await request(app).post(SETTINGS.POSTS_PATH).send(correctCreatePostData).expect(HttpStatuses.Unauthorized_401);
-    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatuses.Ok_200);
-    expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getPostsListResponse.body.items.length).toBe(0);
-    expect(getPostsListResponse.body.totalCount).toBe(0);
-  });
-
-  it('❌ 003 should not create a post when incorrect body passed; POST /api/posts', async () => {
-    const createdBlog: BlogOutputDTO = await createBlog(app);
-    const createdBlogId: string = createdBlog.id;
-    const correctCreatePostData: CreatePostInputDTO = getCreatePostInputDTO(createdBlogId);
-
-    const checkPostCreating = async (
-      title = correctCreatePostData.title,
-      shortDescription: string | null = correctCreatePostData.shortDescription,
-      content: string | null = correctCreatePostData.content,
-      blogId: string | null = correctCreatePostData.blogId
-    ) => {
-      await request(app)
-        .post(SETTINGS.POSTS_PATH)
-        .set('Authorization', adminToken)
-        .send({ title, shortDescription, content, blogId })
-        .expect(HttpStatuses.BadRequest_400);
-    };
-
-    await checkPostCreating('');
-    await checkPostCreating('0123456789012345678901234567890');
-    await checkPostCreating('012345678901234567890123456789000000');
-    await checkPostCreating('   ');
-    await checkPostCreating(undefined, '');
-    await checkPostCreating(undefined, null);
-    await checkPostCreating(undefined, '   ');
-    await checkPostCreating(undefined, undefined, '');
-    await checkPostCreating(undefined, undefined, null);
-    await checkPostCreating(undefined, undefined, '   ');
-    await checkPostCreating(undefined, undefined, undefined, '');
-    await checkPostCreating(undefined, undefined, undefined, null);
-    await checkPostCreating(undefined, undefined, undefined, '   ');
-
-    const getPostsListResponse = await request(app).get(SETTINGS.POSTS_PATH).expect(HttpStatuses.Ok_200);
-    expect(getPostsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getPostsListResponse.body.items.length).toBe(0);
-    expect(getPostsListResponse.body.totalCount).toBe(0);
-  });
-
-  it('❌ 004 should not return a post specified by incorrect ID; GET /api/posts/:id', async () => {
-    const createdPost: PostOutputDTO = await createPost(app);
-    const createdPostId: string = createdPost.id;
-
-    const incorrectPostId1 = null;
-    const incorrectPostId2 = 'ABC';
-    const incorrectPostId3 = 2;
-    const incorrectURL1 = `${SETTINGS.POSTS_PATH}/${incorrectPostId1}`;
-    const incorrectURL2 = `${SETTINGS.POSTS_PATH}/${incorrectPostId2}`;
-    const incorrectURL3 = `${SETTINGS.POSTS_PATH}/${incorrectPostId3}`;
-
-    await request(app).get(incorrectURL1).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectURL2).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectURL3).expect(HttpStatuses.BadRequest_400);
-
-    const getPostByIdResponse = await getPostById(app, createdPostId);
-    expect(getPostByIdResponse).toEqual({ ...createdPost });
-  });
-
-  it('❌ 005 should not update a post specified by ID without proper basic authorization; PUT /api/posts/:id', async () => {
+  it('❌ 005 should not update a post by ID without proper basic authorization; PUT /api/posts/:id', async () => {
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
     const createdPost: PostOutputDTO = await createPost(app, undefined, createdBlogId);
     const createdPostId: string = createdPost.id;
-    const updatePostData: UpdatePostInputDTO = getUpdatePostInputDTO(createdBlogId);
 
-    await request(app)
-      .put(`${SETTINGS.POSTS_PATH}/${createdPostId}`)
-      .send(updatePostData)
-      .expect(HttpStatuses.Unauthorized_401);
+    await updatePostById(app, createdPostId, createdBlogId, undefined, HttpStatuses.Unauthorized_401, 'token');
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
 
-    const getPostByIdResponse = await getPostById(app, createdPostId);
-
-    expect(getPostByIdResponse).toEqual({
-      id: createdPostId,
-      title: createdPost.title,
-      shortDescription: createdPost.shortDescription,
-      content: createdPost.content,
-      blogId: createdBlogId,
-      blogName: createdBlog.name,
-      createdAt: expect.any(String),
-    });
+    expect(getPostByIdResponse).toEqual(createdPost);
   });
 
-  it('❌ 006 should not update a post specified by incorrect ID; PUT /api/posts/:id', async () => {
+  it('❌ 006 should not update a post by incorrect ID; PUT /api/posts/:id', async () => {
+    const incorrectPostId_01: string = 'ABC';
+    const incorrectPostId_02: number = 2;
+    const incorrectPostId_03: null = null;
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
     const createdPost: PostOutputDTO = await createPost(app, undefined, createdBlogId);
     const createdPostId: string = createdPost.id;
-    const updatePostData: UpdatePostInputDTO = getUpdatePostInputDTO(createdBlogId);
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    const incorrectPostId1 = null;
-    const incorrectPostId2 = 'ABC';
-    const incorrectPostId3 = 2;
-    const incorrectURL1 = `${SETTINGS.POSTS_PATH}/${incorrectPostId1}`;
-    const incorrectURL2 = `${SETTINGS.POSTS_PATH}/${incorrectPostId2}`;
-    const incorrectURL3 = `${SETTINGS.POSTS_PATH}/${incorrectPostId3}`;
+    await updatePostById(app, incorrectPostId_01, createdBlogId, undefined, testStatus);
+    await updatePostById(app, incorrectPostId_02, createdBlogId, undefined, testStatus);
+    await updatePostById(app, incorrectPostId_03, createdBlogId, undefined, testStatus);
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
 
-    const checkPostUpdating = async (url: string) => {
-      await request(app)
-        .put(url)
-        .set('Authorization', adminToken)
-        .send(updatePostData)
-        .expect(HttpStatuses.BadRequest_400);
-    };
-
-    await checkPostUpdating(incorrectURL1);
-    await checkPostUpdating(incorrectURL2);
-    await checkPostUpdating(incorrectURL3);
-
-    const getPostByIdResponse = await getPostById(app, createdPostId);
-
-    expect(getPostByIdResponse).toEqual({
-      id: createdPostId,
-      title: createdPost.title,
-      shortDescription: createdPost.shortDescription,
-      content: createdPost.content,
-      blogId: createdBlogId,
-      blogName: createdBlog.name,
-      createdAt: expect.any(String),
-    });
+    expect(getPostByIdResponse).toEqual(createdPost);
   });
 
-  it('❌ 007 should not update a post specified by ID when incorrect body passed; PUT /api/posts/:id', async () => {
+  it('❌ 007 should not update a post by ID when incorrect body passed; PUT /api/posts/:id', async () => {
+    const incorrectTitle_01: string = '';
+    const incorrectTitle_02: string = '   ';
+    const incorrectTitle_03: string = '0123456789012345678901234567890';
+    const incorrectTitle_04: string = '012345678901234567890123456789000000';
+    const incorrectTitle_05: null = null;
+    const incorrectShortDescription_01: string = '';
+    const incorrectShortDescription_02: string = '   ';
+    const incorrectShortDescription_03: null = null;
+    const incorrectContent_01: string = '';
+    const incorrectContent_02: string = '   ';
+    const incorrectContent_03: null = null;
+    const incorrectBlogId_01: number = 2;
+    const incorrectBlogId_02: null = null;
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
-    const createdPost: PostOutputDTO = await createPost(app, undefined, createdBlogId);
-    const createdPostId: string = createdPost.id;
     const correctUpdatePostData: UpdatePostInputDTO = getUpdatePostInputDTO(createdBlogId);
-    const correctURL = `${SETTINGS.POSTS_PATH}/${createdPostId}`;
+    const createdPost: PostOutputDTO = await createPost(app, undefined, createdBlogId);
+    const createdPostId: string = createdPost.id;
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    const checkPostUpdating = async (
-      title = correctUpdatePostData.title,
-      shortDescription: string | null = correctUpdatePostData.shortDescription,
-      content: string | null = correctUpdatePostData.content,
-      blogId: string | null = correctUpdatePostData.blogId
-    ) => {
-      await request(app)
-        .put(correctURL)
-        .set('Authorization', adminToken)
-        .send({ title, shortDescription, content, blogId })
-        .expect(HttpStatuses.BadRequest_400);
-    };
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, title: incorrectTitle_01 },
+      testStatus
+    );
 
-    await checkPostUpdating('');
-    await checkPostUpdating('0123456789012345678901234567890');
-    await checkPostUpdating('012345678901234567890123456789000000');
-    await checkPostUpdating('   ');
-    await checkPostUpdating(undefined, '');
-    await checkPostUpdating(undefined, null);
-    await checkPostUpdating(undefined, '   ');
-    await checkPostUpdating(undefined, undefined, '');
-    await checkPostUpdating(undefined, undefined, null);
-    await checkPostUpdating(undefined, undefined, '   ');
-    await checkPostUpdating(undefined, undefined, undefined, '');
-    await checkPostUpdating(undefined, undefined, undefined, null);
-    await checkPostUpdating(undefined, undefined, undefined, '   ');
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, title: incorrectTitle_02 },
+      testStatus
+    );
 
-    const getPostByIdResponse = await getPostById(app, createdPostId);
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, title: incorrectTitle_03 },
+      testStatus
+    );
 
-    expect(getPostByIdResponse).toEqual({
-      id: createdPostId,
-      title: createdPost.title,
-      shortDescription: createdPost.shortDescription,
-      content: createdPost.content,
-      blogId: createdBlogId,
-      blogName: createdBlog.name,
-      createdAt: expect.any(String),
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, title: incorrectTitle_04 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, title: incorrectTitle_05 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, shortDescription: incorrectShortDescription_01 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, shortDescription: incorrectShortDescription_02 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, shortDescription: incorrectShortDescription_03 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, content: incorrectContent_01 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, content: incorrectContent_02 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, content: incorrectContent_03 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, blogId: incorrectBlogId_01 },
+      testStatus
+    );
+
+    await updatePostById(
+      app,
+      createdPostId,
+      createdBlogId,
+      { ...correctUpdatePostData, blogId: incorrectBlogId_02 },
+      testStatus
+    );
+
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
+
+    expect(getPostByIdResponse).toEqual(createdPost);
+  });
+
+  it('❌ 008 should not delete a post by ID without proper basic authorization; DELETE /api/posts/:id', async () => {
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+
+    await deletePostById(app, createdPostId, HttpStatuses.Unauthorized_401, 'token');
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
+
+    expect(getPostByIdResponse).toEqual(createdPost);
+  });
+
+  it('❌ 009 should not delete a post by incorrect ID; DELETE /api/posts/:id', async () => {
+    const incorrectPostId_01: string = 'ABC';
+    const incorrectPostId_02: number = 2;
+    const incorrectPostId_03: null = null;
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
+
+    await deletePostById(app, incorrectPostId_01, testStatus);
+    await deletePostById(app, incorrectPostId_02, testStatus);
+    await deletePostById(app, incorrectPostId_03, testStatus);
+    const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
+
+    expect(getPostByIdResponse).toEqual(createdPost);
+  });
+
+  it('❌ 010 should not create a comment for a post by ID without proper access token; POST /api/posts/:postId/comments', async () => {
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+
+    await createCommentInPost(app, createdPostId, 'token', undefined, HttpStatuses.Unauthorized_401);
+
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
+      app,
+      createdPostId
+    );
+
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(0);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(0);
+  });
+
+  it('❌ 011 should not create a comment for a post by incorrect ID; POST /api/posts/:postId/comments', async () => {
+    const incorrectPostId_01: string = '   ';
+    const incorrectPostId_02: string = 'ABC';
+    const incorrectPostId_03: number = 2;
+    const incorrectPostId_04: null = null;
+    const createdPost: PostOutputDTO = await createPost(app);
+    const createdPostId: string = createdPost.id;
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
+
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
     });
-  });
 
-  it('❌ 008 should not delete a post specified by ID without proper basic authorization; DELETE /api/posts/:id', async () => {
-    const createdPost: PostOutputDTO = await createPost(app);
-    const createdPostId: string = createdPost.id;
-    await request(app).delete(`${SETTINGS.POSTS_PATH}/${createdPostId}`).expect(HttpStatuses.Unauthorized_401);
-    const getPostByIdResponse = await getPostById(app, createdPostId);
-    expect(getPostByIdResponse).toEqual({ ...createdPost });
-  });
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-  it('❌ 009 should not delete a post specified by incorrect ID; DELETE /api/posts/:id', async () => {
-    const createdPost: PostOutputDTO = await createPost(app);
-    const createdPostId: string = createdPost.id;
+    await createCommentInPost(app, incorrectPostId_01, accessToken, undefined, testStatus);
+    await createCommentInPost(app, incorrectPostId_02, accessToken, undefined, testStatus);
+    await createCommentInPost(app, incorrectPostId_03, accessToken, undefined, testStatus);
+    await createCommentInPost(app, incorrectPostId_04, accessToken, undefined, testStatus);
 
-    const incorrectPostId1 = null;
-    const incorrectPostId2 = 'ABC';
-    const incorrectPostId3 = 2;
-    const incorrectURL1 = `${SETTINGS.POSTS_PATH}/${incorrectPostId1}`;
-    const incorrectURL2 = `${SETTINGS.POSTS_PATH}/${incorrectPostId2}`;
-    const incorrectURL3 = `${SETTINGS.POSTS_PATH}/${incorrectPostId3}`;
-
-    await request(app).delete(incorrectURL1).set('Authorization', adminToken).expect(HttpStatuses.BadRequest_400);
-    await request(app).delete(incorrectURL2).set('Authorization', adminToken).expect(HttpStatuses.BadRequest_400);
-    await request(app).delete(incorrectURL3).set('Authorization', adminToken).expect(HttpStatuses.BadRequest_400);
-
-    const getPostByIdResponse = await getPostById(app, createdPostId);
-    expect(getPostByIdResponse).toEqual({ ...createdPost });
-  });
-
-  it('❌ 010 should not create a comment in a post specified by ID without proper access token; POST /api/posts/:postId/comments', async () => {
-    const createdPost: PostOutputDTO = await createPost(app);
-    const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user01', password: 'password123', email: 'user01@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const correctAccessToken: string = loginResponse.accessToken;
-    const incorrectAccessToken01: string = `${loginResponse.accessToken}123`;
-    const incorrectAccessToken02: string = ``;
-    const incorrectAccessToken03: string = `zxc123ert`;
-    const incorrectAccessToken04: null = null;
-    const incorrectAccessToken05: number = 123456789;
-    const correctCreateCommentDTO01: CreateCommentInPostInputDTO = { content: 'some comment content 001' };
-    const correctCreateCommentDTO02: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
-
-    const checkCommentCreating = async (accessToken: string | number | null) => {
-      await request(app)
-        .post(`${SETTINGS.POSTS_PATH}/${createdPostId}/comments`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send(correctCreateCommentDTO01)
-        .expect(HttpStatuses.Unauthorized_401);
-    };
-
-    await checkCommentCreating(incorrectAccessToken01);
-    await checkCommentCreating(incorrectAccessToken02);
-    await checkCommentCreating(incorrectAccessToken03);
-    await checkCommentCreating(incorrectAccessToken04);
-    await checkCommentCreating(incorrectAccessToken05);
-
-    const createdComment: CommentOutputDTO = await createCommentInPost(
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
       app,
-      createdPostId,
-      correctAccessToken,
-      correctCreateCommentDTO02
+      createdPostId
     );
 
-    expect(createdComment.content).toEqual(correctCreateCommentDTO02.content);
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(0);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(0);
   });
 
-  it('❌ 011 should not create a comment in a post specified by incorrect ID; POST /api/posts/:postId/comments', async () => {
+  it('❌ 012 should not create a comment for a post by ID when incorrect body passed; POST /api/posts/:postId/comments', async () => {
+    const incorrectCreateCommentInPostData_01: CreateCommentInPostInputDTO = { content: 'qwe123zxc' };
+    const incorrectCreateCommentInPostData_02: CreateCommentInPostInputDTO = { content: '' };
+    const incorrectCreateCommentInPostData_03: CreateCommentInPostInputDTO = { content: '   ' };
+    const incorrectCreateCommentInPostData_04: CreateCommentInPostInputDTO = { content: 'ABC' };
+    const incorrectCreateCommentInPostData_05: CreateCommentInPostInputDTO = { content: '1234567890' };
+    const incorrectCreateCommentInPostData_06: { content: [] } = { content: [] };
+    const incorrectCreateCommentInPostData_07: { content: {} } = { content: {} };
+    const incorrectCreateCommentInPostData_08: { content: null } = { content: null };
+    const incorrectCreateCommentInPostData_09: { content: undefined } = { content: undefined };
+    const incorrectCreateCommentInPostData_10: { content: number } = { content: 1234567890 };
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const incorrectPostId01: string = `${createdPost.id}123`;
-    const incorrectPostId02: string = `zxc123ert`;
-    const incorrectPostId03: null = null;
-    const incorrectPostId04: number = 123456789;
-    const credentials01 = { login: 'user01', password: 'password123', email: 'user01@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const correctAccessToken: string = loginResponse.accessToken;
-    const correctCreateCommentDTO01: CreateCommentInPostInputDTO = { content: 'some comment content 001' };
-    const correctCreateCommentDTO02: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const checkCommentCreating = async (postId: string | number | null) => {
-      await request(app)
-        .post(`${SETTINGS.POSTS_PATH}/${postId}/comments`)
-        .set('Authorization', `Bearer ${correctAccessToken}`)
-        .send(correctCreateCommentDTO01)
-        .expect(HttpStatuses.BadRequest_400);
-    };
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
-    await checkCommentCreating(incorrectPostId01);
-    await checkCommentCreating(incorrectPostId02);
-    await checkCommentCreating(incorrectPostId03);
-    await checkCommentCreating(incorrectPostId04);
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    const createdComment: CommentOutputDTO = await createCommentInPost(
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_01, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_02, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_03, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_04, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_05, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_06, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_07, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_08, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_09, testStatus);
+    await createCommentInPost(app, createdPostId, accessToken, incorrectCreateCommentInPostData_10, testStatus);
+
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
       app,
-      createdPostId,
-      correctAccessToken,
-      correctCreateCommentDTO02
+      createdPostId
     );
 
-    expect(createdComment.content).toEqual(correctCreateCommentDTO02.content);
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(0);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(0);
   });
 
-  it('❌ 012 should not create a comment in a post specified by ID when incorrect body passed; POST /api/posts/:postId/comments', async () => {
+  it('❌ 013 should not return a list of comments for a post by incorrect ID; GET /api/posts/:postId/comments', async () => {
+    const incorrectPostId_01: string = '   ';
+    const incorrectPostId_02: string = 'ABC';
+    const incorrectPostId_03: number = 2;
+    const incorrectPostId_04: null = null;
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user01', password: 'password123', email: 'user01@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const correctAccessToken: string = loginResponse.accessToken;
-    const correctCreateCommentDTO: CreateCommentInPostInputDTO = { content: 'some comment content 001' };
-    const incorrectCreateCommentDTO01 = { text: 'some comment content 001' };
-    const incorrectCreateCommentDTO02 = { content: 'zxc123ert' };
-    const incorrectCreateCommentDTO03 = { content: null };
-    const incorrectCreateCommentDTO04 = { content: 123456789 };
-    const incorrectCreateCommentDTO05 = 'some comment content 001';
-    const incorrectCreateCommentDTO06 = undefined;
-    const incorrectCreateCommentDTO07 = null;
-    const incorrectCreateCommentDTO08 = '123456789';
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const checkCommentCreating = async (createCommentDTO: any) => {
-      await request(app)
-        .post(`${SETTINGS.POSTS_PATH}/${createdPostId}/comments`)
-        .set('Authorization', `Bearer ${correctAccessToken}`)
-        .send(createCommentDTO)
-        .expect(HttpStatuses.BadRequest_400);
-    };
-
-    await checkCommentCreating(incorrectCreateCommentDTO01);
-    await checkCommentCreating(incorrectCreateCommentDTO02);
-    await checkCommentCreating(incorrectCreateCommentDTO03);
-    await checkCommentCreating(incorrectCreateCommentDTO04);
-    await checkCommentCreating(incorrectCreateCommentDTO05);
-    await checkCommentCreating(incorrectCreateCommentDTO06);
-    await checkCommentCreating(incorrectCreateCommentDTO07);
-    await checkCommentCreating(incorrectCreateCommentDTO08);
-
-    const createdComment: CommentOutputDTO = await createCommentInPost(
-      app,
-      createdPostId,
-      correctAccessToken,
-      correctCreateCommentDTO
-    );
-
-    expect(createdComment.content).toEqual(correctCreateCommentDTO.content);
-  });
-
-  it('❌ 013 should not return a list of comments in a post specified by incorrect ID; GET /api/posts/:postId/comments', async () => {
-    const createdPost: PostOutputDTO = await createPost(app);
-    const createdPostId: string = createdPost.id;
-    const incorrectPostId01: string = `${createdPost.id}123`;
-    const incorrectPostId02: string = `zxc123ert`;
-    const incorrectPostId03: null = null;
-    const incorrectPostId04: number = 123456789;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO01: CreateCommentInPostInputDTO = { content: 'some comment content 001' };
-    const createCommentDTO02: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
-    const createCommentDTO03: CreateCommentInPostInputDTO = { content: 'some comment content 003' };
-    const createCommentDTO04: CreateCommentInPostInputDTO = { content: 'some comment content 004' };
-    const createCommentDTO05: CreateCommentInPostInputDTO = { content: 'some comment content 005' };
-    const createCommentDTO06: CreateCommentInPostInputDTO = { content: 'some comment content 006' };
-    const createCommentDTO07: CreateCommentInPostInputDTO = { content: 'some comment content 007' };
-    const createCommentDTO08: CreateCommentInPostInputDTO = { content: 'some comment content 008' };
-    const createCommentDTO09: CreateCommentInPostInputDTO = { content: 'some comment content 009' };
-    const createCommentDTO10: CreateCommentInPostInputDTO = { content: 'some comment content 010' };
-    const createCommentDTO11: CreateCommentInPostInputDTO = { content: 'some comment content 011' };
-
-    const createComment = async (createCommentDTO: CreateCommentInPostInputDTO): Promise<CommentOutputDTO> => {
-      return await createCommentInPost(app, createdPostId, accessToken, createCommentDTO);
-    };
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
     await Promise.all([
-      createComment(createCommentDTO01),
-      createComment(createCommentDTO02),
-      createComment(createCommentDTO03),
-      createComment(createCommentDTO04),
-      createComment(createCommentDTO05),
-      createComment(createCommentDTO06),
-      createComment(createCommentDTO07),
-      createComment(createCommentDTO08),
-      createComment(createCommentDTO09),
-      createComment(createCommentDTO10),
-      createComment(createCommentDTO11),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
     ]);
 
-    await request(app).get(`${SETTINGS.POSTS_PATH}/${incorrectPostId01}/comments`).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(`${SETTINGS.POSTS_PATH}/${incorrectPostId02}/comments`).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(`${SETTINGS.POSTS_PATH}/${incorrectPostId03}/comments`).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(`${SETTINGS.POSTS_PATH}/${incorrectPostId04}/comments`).expect(HttpStatuses.BadRequest_400);
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    const getCommentsListResponse = await request(app)
-      .get(`${SETTINGS.POSTS_PATH}/${createdPostId}/comments`)
-      .expect(HttpStatuses.Ok_200);
+    await getCommentsListByPostId(app, incorrectPostId_01, undefined, testStatus);
+    await getCommentsListByPostId(app, incorrectPostId_02, undefined, testStatus);
+    await getCommentsListByPostId(app, incorrectPostId_03, undefined, testStatus);
+    await getCommentsListByPostId(app, incorrectPostId_04, undefined, testStatus);
 
-    expect(getCommentsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getCommentsListResponse.body.items.length).toBe(10);
-    expect(getCommentsListResponse.body.totalCount).toBe(11);
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
+      app,
+      createdPostId
+    );
+
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(2);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(2);
   });
 
-  it('❌ 014 should not return a list of comments in a post specified by ID when incorrect pagination settings passed; GET /api/posts/:postId/comments', async () => {
+  it('❌ 014 should not return a list of comments for a post by ID when incorrect pagination settings passed; GET /api/posts/:postId/comments', async () => {
+    const correctPageSize: number = 5;
+    const correctPageNumber: number = 1;
+    const correctSortDirection: string = 'asc';
+    const correctSortBy: string = 'content';
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO01: CreateCommentInPostInputDTO = { content: 'some comment content 001' };
-    const createCommentDTO02: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
-    const createCommentDTO03: CreateCommentInPostInputDTO = { content: 'some comment content 003' };
-    const createCommentDTO04: CreateCommentInPostInputDTO = { content: 'some comment content 004' };
-    const createCommentDTO05: CreateCommentInPostInputDTO = { content: 'some comment content 005' };
-    const createCommentDTO06: CreateCommentInPostInputDTO = { content: 'some comment content 006' };
-    const createCommentDTO07: CreateCommentInPostInputDTO = { content: 'some comment content 007' };
-    const createCommentDTO08: CreateCommentInPostInputDTO = { content: 'some comment content 008' };
-    const createCommentDTO09: CreateCommentInPostInputDTO = { content: 'some comment content 009' };
-    const createCommentDTO10: CreateCommentInPostInputDTO = { content: 'some comment content 010' };
-    const createCommentDTO11: CreateCommentInPostInputDTO = { content: 'some comment content 011' };
+    const correctUrl: string = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${correctPageSize}&pageNumber=${correctPageNumber}&sortDirection=${correctSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectPageSize: number = 101;
+    const incorrectPageNumber: number = -1;
+    const incorrectSortDirection: string = 'cas';
+    const incorrectSortBy: string = 'description';
+    const incorrectUrl_01: string = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${incorrectPageSize}&pageNumber=${correctPageNumber}&sortDirection=${correctSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectUrl_02: string = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${correctPageSize}&pageNumber=${incorrectPageNumber}&sortDirection=${correctSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectUrl_03: string = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${correctPageSize}&pageNumber=${correctPageNumber}&sortDirection=${incorrectSortDirection}&sortBy=${correctSortBy}`;
+    const incorrectUrl_04: string = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${correctPageSize}&pageNumber=${correctPageNumber}&sortDirection=${correctSortDirection}&sortBy=${incorrectSortBy}`;
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const pageSize = 5;
-    const pageNumber = 1;
-    const sortDirection = 'asc';
-    const sortBy = 'content';
-    const correctQuery = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
-
-    const incorrectPageSize = 101;
-    const incorrectPageNumber = -1;
-    const incorrectSortDirection = 'cas';
-    const incorrectSortBy = 'description';
-    const incorrectQuery1 = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${incorrectPageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
-    const incorrectQuery2 = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${pageSize}&pageNumber=${incorrectPageNumber}&sortDirection=${sortDirection}&sortBy=${sortBy}`;
-    const incorrectQuery3 = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${incorrectSortDirection}&sortBy=${sortBy}`;
-    const incorrectQuery4 = `${SETTINGS.POSTS_PATH}/${createdPostId}/comments?pageSize=${pageSize}&pageNumber=${pageNumber}&sortDirection=${sortDirection}&sortBy=${incorrectSortBy}`;
-
-    const createComment = async (createCommentDTO: CreateCommentInPostInputDTO): Promise<CommentOutputDTO> => {
-      return await createCommentInPost(app, createdPostId, accessToken, createCommentDTO);
-    };
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
     await Promise.all([
-      createComment(createCommentDTO01),
-      createComment(createCommentDTO02),
-      createComment(createCommentDTO03),
-      createComment(createCommentDTO04),
-      createComment(createCommentDTO05),
-      createComment(createCommentDTO06),
-      createComment(createCommentDTO07),
-      createComment(createCommentDTO08),
-      createComment(createCommentDTO09),
-      createComment(createCommentDTO10),
-      createComment(createCommentDTO11),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
+      createCommentInPost(app, createdPostId, accessToken),
     ]);
 
-    await request(app).get(incorrectQuery1).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectQuery2).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectQuery3).expect(HttpStatuses.BadRequest_400);
-    await request(app).get(incorrectQuery4).expect(HttpStatuses.BadRequest_400);
+    const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    const getCommentsListResponse = await request(app).get(correctQuery).expect(HttpStatuses.Ok_200);
+    await getCommentsListByPostId(app, createdPostId, incorrectUrl_01, testStatus);
+    await getCommentsListByPostId(app, createdPostId, incorrectUrl_02, testStatus);
+    await getCommentsListByPostId(app, createdPostId, incorrectUrl_03, testStatus);
+    await getCommentsListByPostId(app, createdPostId, incorrectUrl_04, testStatus);
 
-    expect(getCommentsListResponse.body.items).toBeInstanceOf(Array);
-    expect(getCommentsListResponse.body.items.length).toBe(5);
-    expect(getCommentsListResponse.body.totalCount).toBe(11);
+    const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
+      app,
+      createdPostId,
+      correctUrl
+    );
+
+    expect(getCommentsListByPostIdResponse.items).toBeInstanceOf(Array);
+    expect(getCommentsListByPostIdResponse.items.length).toBe(5);
+    expect(getCommentsListByPostIdResponse.totalCount).toBe(6);
   });
 });

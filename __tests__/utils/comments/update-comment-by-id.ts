@@ -7,17 +7,19 @@ import { UpdateCommentInputDTO } from '../../../src/comments/routes/input-dto/up
 
 export const updateCommentById = async (
   app: Express,
-  commentId: string,
+  commentId: string | any,
   accessToken: string,
-  commentDTO?: UpdateCommentInputDTO
+  commentDTO?: UpdateCommentInputDTO | any,
+  expectedStatus?: HttpStatuses
 ): Promise<void> => {
   const testUpdateCommentData: UpdateCommentInputDTO = { ...getUpdateCommentInputDTO(), ...commentDTO };
+  const testStatus = expectedStatus ?? HttpStatuses.NoContent_204;
 
-  const updateCommentResponse = await request(app)
+  const updateCommentByIdResponse = await request(app)
     .put(`${SETTINGS.COMMENTS_PATH}/${commentId}`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send(testUpdateCommentData)
-    .expect(HttpStatuses.NoContent_204);
+    .expect(testStatus);
 
-  return updateCommentResponse.body;
+  return updateCommentByIdResponse.body;
 };

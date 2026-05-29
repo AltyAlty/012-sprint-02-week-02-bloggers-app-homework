@@ -91,7 +91,7 @@ describe('Auth API validation', () => {
       password: createUserInputDTO.password,
     });
 
-    const correctAccessToken: string = loginResponse.accessToken;
+    const correctAccessToken: string = loginResponse;
     const incorrectAccessToken01: string = `${correctAccessToken}123`;
     const incorrectAccessToken02: string = ``;
     const incorrectAccessToken03: string = `zxc123ert`;

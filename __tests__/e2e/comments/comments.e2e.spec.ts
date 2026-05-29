@@ -1,108 +1,84 @@
 import 'dotenv/config';
-import express from 'express';
-import { setupApp } from '../../../src/setup-app';
-import { generateBasicAuthToken } from '../../utils/auth/generate-admin-auth-token';
-import { runDB, stopDb } from '../../../src/db/mongodb/mongo.db';
-import { SETTINGS } from '../../../src/core/settings/settings';
-import { clearDb } from '../../utils/db/clear-db';
 import { PostOutputDTO } from '../../../src/posts/routes/output-dto/post.output-dto';
 import { createPost } from '../../utils/posts/create-post';
 import { createUser } from '../../utils/users/create-user';
 import { loginUser } from '../../utils/auth/login-user';
-import { CreateCommentInPostInputDTO } from '../../../src/comments/routes/input-dto/create-comment-in-post.input-dto';
 import { CommentOutputDTO } from '../../../src/comments/routes/output-dto/comment.output-dto';
-import { createCommentInPost } from '../../utils/comments/create-comment-in-post';
+import { createCommentInPost } from '../../utils/posts/create-comment-in-post';
 import { getCommentById } from '../../utils/comments/get-comment-by-id';
 import { updateCommentById } from '../../utils/comments/update-comment-by-id';
 import { UpdateCommentInputDTO } from '../../../src/comments/routes/input-dto/update-comment.input-dto';
-import request from 'supertest';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
+import { doBeforeTests } from '../../utils/common/do-before-tests';
+import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-user.input-dto';
+import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
+import { getUpdateCommentInputDTO } from '../../utils/comments/get-update-comment-input-dto';
+import { deleteCommentById } from '../../utils/comments/delete-comment-by-id';
 
 describe('Comments API', () => {
-  const app = express();
-  setupApp(app);
-  const adminToken = generateBasicAuthToken();
+  const app = doBeforeTests();
 
-  beforeAll(async () => {
-    await runDB(SETTINGS.MONGO_URL, SETTINGS.TEST_DB_NAME);
-    await clearDb(app);
-  });
-
-  beforeEach(async () => await clearDb(app));
-
-  afterAll(async () => {
-    await clearDb(app);
-    await stopDb();
-  });
-
-  it('✅ 001 should return a comment specified by ID; GET /api/comments/:id', async () => {
+  it('✅ 001 should return a comment by ID; GET /api/comments/:id', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const createdComment: CommentOutputDTO = await createCommentInPost(
-      app,
-      createdPostId,
-      accessToken,
-      createCommentDTO
-    );
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
-    const getCommentResponse: CommentOutputDTO = await getCommentById(app, createdComment.id);
+    const createdComment: CommentOutputDTO = await createCommentInPost(app, createdPostId, accessToken);
+    const createdCommentId: string = createdComment.id;
 
-    expect(getCommentResponse.id).toEqual(createdComment.id);
-    expect(getCommentResponse.content).toEqual(createCommentDTO.content);
-    expect(getCommentResponse.commentatorInfo.userLogin).toEqual(createdComment.commentatorInfo.userLogin);
-    expect(getCommentResponse.commentatorInfo.userId).toEqual(createdComment.commentatorInfo.userId);
-    expect(getCommentResponse.createdAt).toEqual(createdComment.createdAt);
+    const getCommentByIdResponse: CommentOutputDTO = await getCommentById(app, createdCommentId);
+
+    expect(getCommentByIdResponse).toEqual(createdComment);
+    expect(getCommentByIdResponse.id).toEqual(createdCommentId);
   });
 
-  it('✅ 002 should update a comment specified by ID; PUT /api/comments/:id', async () => {
+  it('✅ 002 should update a comment by ID; PUT /api/comments/:id', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
-    const updateCommentDTO: UpdateCommentInputDTO = { content: 'some updated comment content 002' };
+    const updateCommentData: UpdateCommentInputDTO = getUpdateCommentInputDTO();
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const createdComment: CommentOutputDTO = await createCommentInPost(
-      app,
-      createdPostId,
-      accessToken,
-      createCommentDTO
-    );
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
-    await updateCommentById(app, createdComment.id, accessToken, updateCommentDTO);
-    const getCommentResponse: CommentOutputDTO = await getCommentById(app, createdComment.id);
-    expect(getCommentResponse.content).toEqual(updateCommentDTO.content);
+    const createdComment: CommentOutputDTO = await createCommentInPost(app, createdPostId, accessToken);
+    const createdCommentId: string = createdComment.id;
+
+    await updateCommentById(app, createdCommentId, accessToken, updateCommentData);
+    const getCommentByIdResponse: CommentOutputDTO = await getCommentById(app, createdCommentId);
+
+    expect(getCommentByIdResponse).toEqual({
+      id: createdCommentId,
+      content: updateCommentData.content,
+      commentatorInfo: createdComment.commentatorInfo,
+      createdAt: createdComment.createdAt,
+    });
   });
 
-  it('✅ 003 should delete a comment specified by ID; DELETE /api/comments/:id', async () => {
+  it('✅ 003 should delete a comment by ID; DELETE /api/comments/:id', async () => {
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
-    const credentials01 = { login: 'user02', password: 'password789', email: 'user02@example.ru' };
-    await createUser(app, credentials01);
-    const loginResponse = await loginUser(app, { loginOrEmail: credentials01.login, password: credentials01.password });
-    const accessToken: string = loginResponse.accessToken;
-    const createCommentDTO: CreateCommentInPostInputDTO = { content: 'some comment content 002' };
+    const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
+    await createUser(app, createUserData);
 
-    const createdComment: CommentOutputDTO = await createCommentInPost(
-      app,
-      createdPostId,
-      accessToken,
-      createCommentDTO
-    );
+    const accessToken: string = await loginUser(app, {
+      loginOrEmail: createUserData.login,
+      password: createUserData.password,
+    });
 
-    await request(app)
-      .delete(`${SETTINGS.COMMENTS_PATH}/${createdComment.id}`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .expect(HttpStatuses.NoContent_204);
+    const createdComment: CommentOutputDTO = await createCommentInPost(app, createdPostId, accessToken);
+    const createdCommentId: string = createdComment.id;
 
-    await request(app).get(`${SETTINGS.COMMENTS_PATH}/${createdComment.id}`).expect(HttpStatuses.NotFound_404);
+    await deleteCommentById(app, createdCommentId, accessToken);
+    await getCommentById(app, createdCommentId, HttpStatuses.NotFound_404);
   });
 });

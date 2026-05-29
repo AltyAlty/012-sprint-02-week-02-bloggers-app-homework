@@ -6,10 +6,10 @@ import { PostOutputDTO } from '../../../src/posts/routes/output-dto/post.output-
 
 export const getPostById = async (
   app: Express,
-  postId: string,
+  postId: string | any,
   expectedStatus?: HttpStatuses
 ): Promise<PostOutputDTO> => {
   const testStatus = expectedStatus ?? HttpStatuses.Ok_200;
-  const getPostResponse = await request(app).get(`${SETTINGS.POSTS_PATH}/${postId}`).expect(testStatus);
-  return getPostResponse.body;
+  const getPostByIdResponse = await request(app).get(`${SETTINGS.POSTS_PATH}/${postId}`).expect(testStatus);
+  return getPostByIdResponse.body;
 };

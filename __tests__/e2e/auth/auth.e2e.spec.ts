@@ -78,7 +78,7 @@ describe('Auth API', () => {
       password: createUserInputDTO.password,
     });
 
-    const accessToken: string = loginResponse.accessToken;
+    const accessToken: string = loginResponse;
 
     const meResponse = await request(app)
       .get(`${SETTINGS.AUTH_PATH}/me`)

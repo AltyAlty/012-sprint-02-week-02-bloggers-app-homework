@@ -1,27 +1,20 @@
-import request from 'supertest';
 import { Express } from 'express';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { generateBasicAuthToken } from '../auth/generate-admin-auth-token';
+import request from 'supertest';
 import { SETTINGS } from '../../../src/core/settings/settings';
-import { getUpdateBlogInputDTO } from './get-update-blog-input-dto';
-import { UpdateBlogInputDTO } from '../../../src/blogs/routes/input-dto/update-blog.input-dto';
 
-export const updateBlogById = async (
+export const deletePostById = async (
   app: Express,
-  blogId: string | any,
-  blogDTO?: UpdateBlogInputDTO | any,
+  postId: string | any,
   expectedStatus?: HttpStatuses,
   basicAuthToken?: string
 ): Promise<void> => {
-  const testUpdateBlogData: UpdateBlogInputDTO = { ...getUpdateBlogInputDTO(), ...blogDTO };
   const testStatus = expectedStatus ?? HttpStatuses.NoContent_204;
   const testBasicAuthToken = basicAuthToken ?? generateBasicAuthToken();
 
-  const updateBlogByIdResponse = await request(app)
-    .put(`${SETTINGS.BLOGS_PATH}/${blogId}`)
+  await request(app)
+    .delete(`${SETTINGS.POSTS_PATH}/${postId}`)
     .set('Authorization', testBasicAuthToken)
-    .send(testUpdateBlogData)
     .expect(testStatus);
-
-  return updateBlogByIdResponse.body;
 };
