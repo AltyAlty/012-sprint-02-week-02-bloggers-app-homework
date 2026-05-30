@@ -7,7 +7,7 @@ import request from 'supertest';
 
 export const loginUser = async (
   app: Express,
-  loginDataDTO?: LoginDataInputDTO,
+  loginDataDTO?: LoginDataInputDTO | any,
   expectedStatus?: HttpStatuses
 ): Promise<string> => {
   const testLoginData: LoginDataInputDTO = { ...getLoginDataInputDTO(), ...loginDataDTO };

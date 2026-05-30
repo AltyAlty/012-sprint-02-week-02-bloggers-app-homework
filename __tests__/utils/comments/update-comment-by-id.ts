@@ -8,7 +8,7 @@ import { UpdateCommentInputDTO } from '../../../src/comments/routes/input-dto/up
 export const updateCommentById = async (
   app: Express,
   commentId: string | any,
-  accessToken: string,
+  accessToken: string | any,
   commentDTO?: UpdateCommentInputDTO | any,
   expectedStatus?: HttpStatuses
 ): Promise<void> => {

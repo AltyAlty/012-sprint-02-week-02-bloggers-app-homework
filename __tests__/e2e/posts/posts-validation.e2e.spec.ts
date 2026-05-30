@@ -3,9 +3,7 @@ import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { SETTINGS } from '../../../src/core/settings/settings';
 import { createBlog } from '../../utils/blogs/create-blog';
 import { createPost } from '../../utils/posts/create-post';
-import { getCreatePostInputDTO } from '../../utils/posts/get-create-post-input-dto';
 import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-dto';
-import { CreatePostInputDTO } from '../../../src/posts/routes/input-dto/create-post.input-dto';
 import { PostOutputDTO } from '../../../src/posts/routes/output-dto/post.output-dto';
 import { getPostById } from '../../utils/posts/get-post-by-id';
 import { createUser } from '../../utils/users/create-user';
@@ -21,8 +19,6 @@ import { getCommentsListByPostId } from '../../utils/posts/get-comments-list-by-
 import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-user.input-dto';
 import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
 import { PaginatedCommentsListOutputDTO } from '../../../src/comments/routes/output-dto/paginated-comments-list.output-dto';
-import { UpdatePostInputDTO } from '../../../src/posts/routes/input-dto/update-post.input-dto';
-import { getUpdatePostInputDTO } from '../../utils/posts/get-update-post-input-dto';
 
 describe('Posts API validation', () => {
   const app = doBeforeTests();
@@ -39,7 +35,6 @@ describe('Posts API validation', () => {
   it('❌ 002 should not create a post when incorrect body passed; POST /api/posts', async () => {
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
-    const correctCreatePostData: CreatePostInputDTO = getCreatePostInputDTO(createdBlogId);
     const incorrectTitle_01: string = '';
     const incorrectTitle_02: string = '   ';
     const incorrectTitle_03: string = '0123456789012345678901234567890';
@@ -55,38 +50,19 @@ describe('Posts API validation', () => {
     const incorrectBlogId_02: null = null;
     const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_01 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_02 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_03 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_04 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, title: incorrectTitle_05 }, createdBlogId, testStatus);
-
-    await createPost(
-      app,
-      { ...correctCreatePostData, shortDescription: incorrectShortDescription_01 },
-      createdBlogId,
-      testStatus
-    );
-
-    await createPost(
-      app,
-      { ...correctCreatePostData, shortDescription: incorrectShortDescription_02 },
-      createdBlogId,
-      testStatus
-    );
-
-    await createPost(
-      app,
-      { ...correctCreatePostData, shortDescription: incorrectShortDescription_03 },
-      createdBlogId,
-      testStatus
-    );
-
-    await createPost(app, { ...correctCreatePostData, content: incorrectContent_01 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, content: incorrectContent_02 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, content: incorrectContent_03 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, blogId: incorrectBlogId_01 }, createdBlogId, testStatus);
-    await createPost(app, { ...correctCreatePostData, blogId: incorrectBlogId_02 }, createdBlogId, testStatus);
+    await createPost(app, { title: incorrectTitle_01 }, createdBlogId, testStatus);
+    await createPost(app, { title: incorrectTitle_02 }, createdBlogId, testStatus);
+    await createPost(app, { title: incorrectTitle_03 }, createdBlogId, testStatus);
+    await createPost(app, { title: incorrectTitle_04 }, createdBlogId, testStatus);
+    await createPost(app, { title: incorrectTitle_05 }, createdBlogId, testStatus);
+    await createPost(app, { shortDescription: incorrectShortDescription_01 }, createdBlogId, testStatus);
+    await createPost(app, { shortDescription: incorrectShortDescription_02 }, createdBlogId, testStatus);
+    await createPost(app, { shortDescription: incorrectShortDescription_03 }, createdBlogId, testStatus);
+    await createPost(app, { content: incorrectContent_01 }, createdBlogId, testStatus);
+    await createPost(app, { content: incorrectContent_02 }, createdBlogId, testStatus);
+    await createPost(app, { content: incorrectContent_03 }, createdBlogId, testStatus);
+    await createPost(app, { blogId: incorrectBlogId_01 }, createdBlogId, testStatus);
+    await createPost(app, { blogId: incorrectBlogId_02 }, createdBlogId, testStatus);
     const getPostsListResponse: PaginatedPostsListOutputDTO = await getPostsList(app);
 
     expect(getPostsListResponse.items).toBeInstanceOf(Array);
@@ -184,16 +160,21 @@ describe('Posts API validation', () => {
     const incorrectBlogId_02: null = null;
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
-    const correctUpdatePostData: UpdatePostInputDTO = getUpdatePostInputDTO(createdBlogId);
     const createdPost: PostOutputDTO = await createPost(app, undefined, createdBlogId);
     const createdPostId: string = createdPost.id;
     const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
+    await updatePostById(app, createdPostId, createdBlogId, { title: incorrectTitle_01 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { title: incorrectTitle_02 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { title: incorrectTitle_03 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { title: incorrectTitle_04 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { title: incorrectTitle_05 }, testStatus);
+
     await updatePostById(
       app,
       createdPostId,
       createdBlogId,
-      { ...correctUpdatePostData, title: incorrectTitle_01 },
+      { shortDescription: incorrectShortDescription_01 },
       testStatus
     );
 
@@ -201,7 +182,7 @@ describe('Posts API validation', () => {
       app,
       createdPostId,
       createdBlogId,
-      { ...correctUpdatePostData, title: incorrectTitle_02 },
+      { shortDescription: incorrectShortDescription_02 },
       testStatus
     );
 
@@ -209,90 +190,15 @@ describe('Posts API validation', () => {
       app,
       createdPostId,
       createdBlogId,
-      { ...correctUpdatePostData, title: incorrectTitle_03 },
+      { shortDescription: incorrectShortDescription_03 },
       testStatus
     );
 
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, title: incorrectTitle_04 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, title: incorrectTitle_05 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, shortDescription: incorrectShortDescription_01 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, shortDescription: incorrectShortDescription_02 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, shortDescription: incorrectShortDescription_03 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, content: incorrectContent_01 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, content: incorrectContent_02 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, content: incorrectContent_03 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, blogId: incorrectBlogId_01 },
-      testStatus
-    );
-
-    await updatePostById(
-      app,
-      createdPostId,
-      createdBlogId,
-      { ...correctUpdatePostData, blogId: incorrectBlogId_02 },
-      testStatus
-    );
-
+    await updatePostById(app, createdPostId, createdBlogId, { content: incorrectContent_01 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { content: incorrectContent_02 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { content: incorrectContent_03 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { blogId: incorrectBlogId_01 }, testStatus);
+    await updatePostById(app, createdPostId, createdBlogId, { blogId: incorrectBlogId_02 }, testStatus);
     const getPostByIdResponse: PostOutputDTO = await getPostById(app, createdPostId);
 
     expect(getPostByIdResponse).toEqual(createdPost);
@@ -325,10 +231,26 @@ describe('Posts API validation', () => {
   });
 
   it('❌ 010 should not create a comment for a post by ID without proper access token; POST /api/posts/:postId/comments', async () => {
+    const incorrectAccessToken_01: string = '';
+    const incorrectAccessToken_02: string = '   ';
+    const incorrectAccessToken_03: string = 'token';
+    const incorrectAccessToken_04: number = 2;
+    const incorrectAccessToken_05: null = null;
+    const incorrectAccessToken_06: undefined = undefined;
+    const incorrectAccessToken_07: [] = [];
+    const incorrectAccessToken_08: {} = {};
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
+    const testStatus: HttpStatuses = HttpStatuses.Unauthorized_401;
 
-    await createCommentInPost(app, createdPostId, 'token', undefined, HttpStatuses.Unauthorized_401);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_01, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_02, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_03, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_04, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_05, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_06, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_07, undefined, testStatus);
+    await createCommentInPost(app, createdPostId, incorrectAccessToken_08, undefined, testStatus);
 
     const getCommentsListByPostIdResponse: PaginatedCommentsListOutputDTO = await getCommentsListByPostId(
       app,

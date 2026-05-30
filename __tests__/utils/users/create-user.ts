@@ -9,7 +9,7 @@ import { getCreateUserInputDTO } from './get-create-user-input-dto';
 
 export const createUser = async (
   app: Express,
-  userDTO?: CreateUserInputDTO,
+  userDTO?: CreateUserInputDTO | any,
   expectedStatus?: HttpStatuses,
   basicAuthToken?: string
 ): Promise<UserOutputDTO> => {

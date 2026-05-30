@@ -9,7 +9,7 @@ import { HttpStatuses } from '../../../src/core/types/http-statuses';
 export const createCommentInPost = async (
   app: Express,
   postId: string | any,
-  accessToken: string,
+  accessToken: string | any,
   commentDTO?: CreateCommentInPostInputDTO | any,
   expectedStatus?: HttpStatuses
 ): Promise<CommentOutputDTO> => {

@@ -45,6 +45,14 @@ describe('Comments API', () => {
   });
 
   it('❌ 002 should not update a comment by ID without proper access token; PUT /api/comments/:id', async () => {
+    const incorrectAccessToken_01: string = '';
+    const incorrectAccessToken_02: string = '   ';
+    const incorrectAccessToken_03: string = 'token';
+    const incorrectAccessToken_04: number = 2;
+    const incorrectAccessToken_05: null = null;
+    const incorrectAccessToken_06: undefined = undefined;
+    const incorrectAccessToken_07: [] = [];
+    const incorrectAccessToken_08: {} = {};
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
     const updateCommentData: UpdateCommentInputDTO = getUpdateCommentInputDTO();
@@ -58,8 +66,16 @@ describe('Comments API', () => {
 
     const createdComment: CommentOutputDTO = await createCommentInPost(app, createdPostId, accessToken);
     const createdCommentId: string = createdComment.id;
+    const testStatus: HttpStatuses = HttpStatuses.Unauthorized_401;
 
-    await updateCommentById(app, createdCommentId, 'token', updateCommentData, HttpStatuses.Unauthorized_401);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_01, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_02, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_03, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_04, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_05, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_06, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_07, updateCommentData, testStatus);
+    await updateCommentById(app, createdCommentId, incorrectAccessToken_08, updateCommentData, testStatus);
     const getCommentByIdResponse: CommentOutputDTO = await getCommentById(app, createdCommentId);
 
     expect(getCommentByIdResponse).toEqual(createdComment);
@@ -133,6 +149,14 @@ describe('Comments API', () => {
   });
 
   it('❌ 005 should not delete a comment by ID without proper access token; DELETE /api/comments/:id', async () => {
+    const incorrectAccessToken_01: string = '';
+    const incorrectAccessToken_02: string = '   ';
+    const incorrectAccessToken_03: string = 'token';
+    const incorrectAccessToken_04: number = 2;
+    const incorrectAccessToken_05: null = null;
+    const incorrectAccessToken_06: undefined = undefined;
+    const incorrectAccessToken_07: [] = [];
+    const incorrectAccessToken_08: {} = {};
     const createdPost: PostOutputDTO = await createPost(app);
     const createdPostId: string = createdPost.id;
     const createUserData: CreateUserInputDTO = getCreateUserInputDTO();
@@ -145,8 +169,16 @@ describe('Comments API', () => {
 
     const createdComment: CommentOutputDTO = await createCommentInPost(app, createdPostId, accessToken);
     const createdCommentId: string = createdComment.id;
+    const testStatus: HttpStatuses = HttpStatuses.Unauthorized_401;
 
-    await deleteCommentById(app, createdCommentId, 'token', HttpStatuses.Unauthorized_401);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_01, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_02, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_03, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_04, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_05, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_06, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_07, testStatus);
+    await deleteCommentById(app, createdCommentId, incorrectAccessToken_08, testStatus);
     const getCommentByIdResponse: CommentOutputDTO = await getCommentById(app, createdCommentId);
 
     expect(getCommentByIdResponse).toEqual(createdComment);

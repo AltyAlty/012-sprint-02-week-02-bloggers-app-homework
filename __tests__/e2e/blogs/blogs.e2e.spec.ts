@@ -5,7 +5,6 @@ import { createBlog } from '../../utils/blogs/create-blog';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
 import { UpdateBlogInputDTO } from '../../../src/blogs/routes/input-dto/update-blog.input-dto';
 import { updateBlogById } from '../../utils/blogs/update-blog-by-id';
-import { getCreateBlogInputDTO } from '../../utils/blogs/get-create-blog-input-dto';
 import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-dto';
 import { getUpdateBlogInputDTO } from '../../utils/blogs/get-update-blog-input-dto';
 import { PostOutputDTO } from '../../../src/posts/routes/output-dto/post.output-dto';
@@ -65,12 +64,12 @@ describe('Blogs API', () => {
     const blogName_06 = 'blog name 06';
 
     await Promise.all([
-      createBlog(app, { ...getCreateBlogInputDTO(), name: blogName_01 }),
-      createBlog(app, { ...getCreateBlogInputDTO(), name: blogName_02 }),
-      createBlog(app, { ...getCreateBlogInputDTO(), name: blogName_03 }),
-      createBlog(app, { ...getCreateBlogInputDTO(), name: blogName_04 }),
-      createBlog(app, { ...getCreateBlogInputDTO(), name: blogName_05 }),
-      createBlog(app, { ...getCreateBlogInputDTO(), name: blogName_06 }),
+      createBlog(app, { name: blogName_01 }),
+      createBlog(app, { name: blogName_02 }),
+      createBlog(app, { name: blogName_03 }),
+      createBlog(app, { name: blogName_04 }),
+      createBlog(app, { name: blogName_05 }),
+      createBlog(app, { name: blogName_06 }),
       createBlog(app),
       createBlog(app),
     ]);

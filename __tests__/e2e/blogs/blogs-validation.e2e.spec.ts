@@ -2,19 +2,13 @@ import 'dotenv/config';
 import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { SETTINGS } from '../../../src/core/settings/settings';
 import { createBlog } from '../../utils/blogs/create-blog';
-import { getCreateBlogInputDTO } from '../../utils/blogs/get-create-blog-input-dto';
-import { CreateBlogInputDTO } from '../../../src/blogs/routes/input-dto/create-blog.input-dto';
 import { getBlogById } from '../../utils/blogs/get-blog-by-id';
-import { UpdateBlogInputDTO } from '../../../src/blogs/routes/input-dto/update-blog.input-dto';
 import { BlogOutputDTO } from '../../../src/blogs/routes/output-dto/blog.output-dto';
-import { getUpdateBlogInputDTO } from '../../utils/blogs/get-update-blog-input-dto';
 import { getBlogsList } from '../../utils/blogs/get-blogs-list';
 import { getPostsListByBlogId } from '../../utils/blogs/get-posts-list-by-blog-id';
 import { PaginatedPostsListOutputDTO } from '../../../src/posts/routes/output-dto/paginated-posts-list.output-dto';
 import { PaginatedBlogsListOutputDTO } from '../../../src/blogs/routes/output-dto/paginated-blogs-list.output-dto';
 import { createPostInBlog } from '../../utils/blogs/create-post-in-blog';
-import { getCreatePostInBlogInputDTO } from '../../utils/blogs/get-create-post-in-blog-input-dto';
-import { CreatePostInBlogInputDTO } from '../../../src/posts/routes/input-dto/create-post-in-blog.input-dto';
 import { updateBlogById } from '../../utils/blogs/update-blog-by-id';
 import { deleteBlogById } from '../../utils/blogs/delete-blog-by-id';
 import { doBeforeTests } from '../../utils/common/do-before-tests';
@@ -32,7 +26,6 @@ describe('Blogs API validation', () => {
   });
 
   it('❌ 002 should not create a blog when incorrect body passed; POST /api/blogs', async () => {
-    const correctCreateBlogData: CreateBlogInputDTO = getCreateBlogInputDTO();
     const incorrectName_01: string = '';
     const incorrectName_02: string = '   ';
     const incorrectName_03: string = '0123456789111111';
@@ -46,17 +39,17 @@ describe('Blogs API validation', () => {
     const incorrectWebsiteUrl_04: null = null;
     const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    await createBlog(app, { ...correctCreateBlogData, name: incorrectName_01 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, name: incorrectName_02 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, name: incorrectName_03 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, name: incorrectName_04 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, description: incorrectDescription_01 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, description: incorrectDescription_02 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, description: incorrectDescription_03 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, websiteUrl: incorrectWebsiteUrl_01 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, websiteUrl: incorrectWebsiteUrl_02 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, websiteUrl: incorrectWebsiteUrl_03 }, testStatus);
-    await createBlog(app, { ...correctCreateBlogData, websiteUrl: incorrectWebsiteUrl_04 }, testStatus);
+    await createBlog(app, { name: incorrectName_01 }, testStatus);
+    await createBlog(app, { name: incorrectName_02 }, testStatus);
+    await createBlog(app, { name: incorrectName_03 }, testStatus);
+    await createBlog(app, { name: incorrectName_04 }, testStatus);
+    await createBlog(app, { description: incorrectDescription_01 }, testStatus);
+    await createBlog(app, { description: incorrectDescription_02 }, testStatus);
+    await createBlog(app, { description: incorrectDescription_03 }, testStatus);
+    await createBlog(app, { websiteUrl: incorrectWebsiteUrl_01 }, testStatus);
+    await createBlog(app, { websiteUrl: incorrectWebsiteUrl_02 }, testStatus);
+    await createBlog(app, { websiteUrl: incorrectWebsiteUrl_03 }, testStatus);
+    await createBlog(app, { websiteUrl: incorrectWebsiteUrl_04 }, testStatus);
     const getBlogsListResponse: PaginatedBlogsListOutputDTO = await getBlogsList(app);
 
     expect(getBlogsListResponse.items).toBeInstanceOf(Array);
@@ -135,7 +128,6 @@ describe('Blogs API validation', () => {
   });
 
   it('❌ 007 should not update a blog by ID when incorrect body passed; PUT /api/blogs/:id', async () => {
-    const correctUpdateBlogData: UpdateBlogInputDTO = getUpdateBlogInputDTO();
     const incorrectName_01: string = '';
     const incorrectName_02: string = '   ';
     const incorrectName_03: string = '0123456789111111';
@@ -151,60 +143,17 @@ describe('Blogs API validation', () => {
     const createdBlogId: string = createdBlog.id;
     const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    await updateBlogById(app, createdBlogId, { ...correctUpdateBlogData, name: incorrectName_01 }, testStatus);
-    await updateBlogById(app, createdBlogId, { ...correctUpdateBlogData, name: incorrectName_02 }, testStatus);
-    await updateBlogById(app, createdBlogId, { ...correctUpdateBlogData, name: incorrectName_03 }, testStatus);
-    await updateBlogById(app, createdBlogId, { ...correctUpdateBlogData, name: incorrectName_04 }, testStatus);
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, description: incorrectDescription_01 },
-      testStatus
-    );
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, description: incorrectDescription_02 },
-      testStatus
-    );
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, description: incorrectDescription_03 },
-      testStatus
-    );
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, websiteUrl: incorrectWebsiteUrl_01 },
-      testStatus
-    );
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, websiteUrl: incorrectWebsiteUrl_02 },
-      testStatus
-    );
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, websiteUrl: incorrectWebsiteUrl_03 },
-      testStatus
-    );
-
-    await updateBlogById(
-      app,
-      createdBlogId,
-      { ...correctUpdateBlogData, websiteUrl: incorrectWebsiteUrl_04 },
-      testStatus
-    );
-
+    await updateBlogById(app, createdBlogId, { name: incorrectName_01 }, testStatus);
+    await updateBlogById(app, createdBlogId, { name: incorrectName_02 }, testStatus);
+    await updateBlogById(app, createdBlogId, { name: incorrectName_03 }, testStatus);
+    await updateBlogById(app, createdBlogId, { name: incorrectName_04 }, testStatus);
+    await updateBlogById(app, createdBlogId, { description: incorrectDescription_01 }, testStatus);
+    await updateBlogById(app, createdBlogId, { description: incorrectDescription_02 }, testStatus);
+    await updateBlogById(app, createdBlogId, { description: incorrectDescription_03 }, testStatus);
+    await updateBlogById(app, createdBlogId, { websiteUrl: incorrectWebsiteUrl_01 }, testStatus);
+    await updateBlogById(app, createdBlogId, { websiteUrl: incorrectWebsiteUrl_02 }, testStatus);
+    await updateBlogById(app, createdBlogId, { websiteUrl: incorrectWebsiteUrl_03 }, testStatus);
+    await updateBlogById(app, createdBlogId, { websiteUrl: incorrectWebsiteUrl_04 }, testStatus);
     const getBlogByIdResponse: BlogOutputDTO = await getBlogById(app, createdBlogId);
 
     expect(getBlogByIdResponse).toEqual(createdBlog);
@@ -282,86 +231,19 @@ describe('Blogs API validation', () => {
     const incorrectContent_03: null = null;
     const createdBlog: BlogOutputDTO = await createBlog(app);
     const createdBlogId: string = createdBlog.id;
-    const correctCreatePostInBlogData: CreatePostInBlogInputDTO = getCreatePostInBlogInputDTO();
     const testStatus: HttpStatuses = HttpStatuses.BadRequest_400;
 
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, title: incorrectTitle_01 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, title: incorrectTitle_02 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, title: incorrectTitle_03 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, title: incorrectTitle_04 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, title: incorrectTitle_05 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, shortDescription: incorrectShortDescription_01 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, shortDescription: incorrectShortDescription_02 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, shortDescription: incorrectShortDescription_03 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, content: incorrectContent_01 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, content: incorrectContent_02 },
-      testStatus
-    );
-
-    await createPostInBlog(
-      app,
-      createdBlogId,
-      { ...correctCreatePostInBlogData, content: incorrectContent_03 },
-      testStatus
-    );
-
+    await createPostInBlog(app, createdBlogId, { title: incorrectTitle_01 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { title: incorrectTitle_02 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { title: incorrectTitle_03 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { title: incorrectTitle_04 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { title: incorrectTitle_05 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { shortDescription: incorrectShortDescription_01 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { shortDescription: incorrectShortDescription_02 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { shortDescription: incorrectShortDescription_03 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { content: incorrectContent_01 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { content: incorrectContent_02 }, testStatus);
+    await createPostInBlog(app, createdBlogId, { content: incorrectContent_03 }, testStatus);
     const getPostsListByBlogIdResponse: PaginatedPostsListOutputDTO = await getPostsListByBlogId(app, createdBlogId);
 
     expect(getPostsListByBlogIdResponse.items).toBeInstanceOf(Array);
