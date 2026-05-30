@@ -5,8 +5,8 @@ info:
   description: Bloggers API documentation
 
 tags:
-  - name: Testing
-    description: API for clearing the database
+  - name: Auth
+    description: API for managing authentication and authorization
   - name: Blogs
     description: API for managing blogs
   - name: Posts
@@ -15,3 +15,5 @@ tags:
     description: API for managing comments
   - name: Users
     description: API for managing users
+  - name: Testing
+    description: API for clearing the database

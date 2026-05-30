@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { createUser } from '../../utils/users/create-user';
-import { jwtService } from '../../../src/auth/adapters/jwt.service';
+import { jwtAdapter } from '../../../src/auth/adapters/jwt.adapter';
 import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
 import { loginUser } from '../../utils/auth/login-user';
 import { doBeforeTests } from '../../utils/common/do-before-tests';
@@ -25,8 +25,8 @@ describe('Auth API', () => {
 
     const accessToken_01: string = await loginUser(app, loginUserData_01);
     const accessToken_02: string = await loginUser(app, loginUserData_02);
-    const decodedToken_01: { userId: string } | null = await jwtService.verifyToken(accessToken_01);
-    const decodedToken_02: { userId: string } | null = await jwtService.verifyToken(accessToken_02);
+    const decodedToken_01: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_01);
+    const decodedToken_02: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_02);
 
     expect(typeof accessToken_01).toBe('string');
     expect(typeof accessToken_02).toBe('string');

@@ -681,7 +681,8 @@ ResultObject - паттерн в бэкенд-разработке, исполь
   extensions: [{ field: 'userId', message: 'Not Found' }], /* массив дополнительных данных об ошибках */
 }
 
-При использовании паттерна ResultObject мы обычно не выбрасываем ошибки, а формируем соответствующий ResultObject в BLL.
+При использовании паттерна ResultObject обычно не выбрасываются ошибки, а формируются соответствующие ResultObjects в
+BLL.
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
@@ -690,82 +691,101 @@ ResultObject - паттерн в бэкенд-разработке, исполь
 0.2 Файл "/src/setup-app.ts" - настройка приложения.
 
 1. "/src/auth/" - код, связанный с аутентификацией и авторизацией.
-1.1 "/src/auth/adapters/bcrypt.service.ts" - адаптер для работы с библиотекой bcrypt.
-1.2 "/src/auth/adapters/argon2.service.ts" - адаптер для работы с библиотекой @node-rs/argon2.
-1.3 "/src/auth/application/auth.service.ts" - сервис для работы с аутентификацией.
-1.4 "/src/auth/middlewares/basic-auth.guard-middleware.ts" - middleware для basic авторизации.
-1.5 "/src/auth/routes/auth.router.ts" - роутер для работы с аутентификацией.
-1.6 "/src/auth/routes/handlers/" - функции-обработчики для роутера для работы с аутентификацией.
-1.7 "/src/auth/routes/input-dto/" - DTO для входных данных для работы с аутентификацией.
-1.8 "/src/auth/validation/" - валидационные middlewares для входных данных для работы с аутентификацией.
+1.1 "/src/auth/adapters/argon2.adapter.ts" - адаптер для работы с библиотекой @node-rs/argon2.
+1.2 "/src/auth/adapters/bcrypt.adapter.ts" - адаптер для работы с библиотекой bcrypt.
+1.3 "/src/auth/adapters/jwt.adapter.ts" - адаптер для работы с библиотекой jsonwebtoken.
+1.4 "/src/auth/application/auth.service.ts" - сервис для работы с аутентификацией и авторизацией.
+1.5 "/src/auth/docs/auth.service.ts" - документация Swagger для аутентификации и авторизации.
+1.6 "/src/auth/middlewares/guard-middlewares/access-token.guard-middleware.ts.ts" - middleware для проверки AT.
+1.7 "/src/auth/middlewares/guard-middlewares/basic-auth.guard-middleware.ts" - middleware для basic авторизации.
+1.8 "/src/auth/routes/auth.router.ts" - роутер для работы с аутентификацией и авторизацией.
+1.9 "/src/auth/routes/handlers/" - функции-обработчики для роутера для работы с аутентификацией и авторизацией.
+1.10 "/src/auth/routes/input-dto/" - input DTO для работы с аутентификацией и авторизацией.
+1.11 "/src/auth/routes/output-dto/" - output DTO для работы с аутентификацией и авторизацией.
+1.12 "/src/auth/validation/" - валидационные middlewares для входных данных при работе с аутентификацией и авторизацией.
 
 2. "/src/blogs/" - код, связанный с блогами.
-2.1 "/src/blogs/application/blogs.service.ts" - сервис для работы с данными по блогам.
-2.2 "/src/blogs/application/blogs.query-service.ts" - query-сервис для работы с данными по блогам.
-2.3 "/src/blogs/docs/" - документация Swagger по блогам.
-2.4 "/src/blogs/repositories/blogs.repository.ts" - репозиторий для работы с данными по блогам в БД.
-2.5 "/src/blogs/repositories/blogs.query-repository.ts" - query-репозиторий для работы с данными по блогам в БД.
-2.6 "/src/blogs/repositories/mappers/" - функции-преобразователи для работы с данными по блогам из БД.
-2.7 "/src/blogs/routes/blogs.router.ts" - роутер для работы с данными по блогам.
-2.8 "/src/blogs/routes/handlers/" - функции-обработчики для роутера для работы с данными по блогам.
-2.9 "/src/blogs/routes/input-dto/" - DTO для входных данных по блогам.
-2.10 "/src/blogs/routes/output-dto/" - DTO для исходящих данных по блогам.
+2.1 "/src/blogs/application/blogs.service.ts" - сервис для работы с блогами.
+2.2 "/src/blogs/application/blogs.query-service.ts" - query-сервис для работы с блогами.
+2.3 "/src/blogs/docs/" - документация Swagger для блогов.
+2.4 "/src/blogs/repositories/blogs.repository.ts" - репозиторий для работы с блогами в БД.
+2.5 "/src/blogs/repositories/blogs.query-repository.ts" - query-репозиторий для работы с блогами в БД.
+2.6 "/src/blogs/repositories/mappers/" - функции-преобразователи для работы с блогами из БД.
+2.7 "/src/blogs/routes/blogs.router.ts" - роутер для работы с блогами.
+2.8 "/src/blogs/routes/handlers/" - функции-обработчики для роутера для работы с блогами.
+2.9 "/src/blogs/routes/input-dto/" - input DTO для блогов.
+2.10 "/src/blogs/routes/output-dto/" - output DTO для блогов.
 2.11 "/src/blogs/types/" - типы для блогов.
-2.12 "/src/blogs/validation/" - валидационные middlewares для входных данных по блогам.
+2.12 "/src/blogs/validation/" - валидационные middlewares для входных данных при работе с блогами.
 
-3. "/src/core/" - общий код для всего приложения.
-3.1 "/src/core/errors/" - код, связанный с ошибками для разных частей приложения.
-3.2 "/src/core/middlewares/validation/" - валидационные middlewares для всего приложения.
-3.3 "/src/core/settings/" - глобальные настройки для всего приложения.
-3.4 "/src/core/swagger/" - настройка Swagger для всего приложения.
-3.5 "/src/core/types/" - общие типы для всего приложения.
-3.6 "/src/core/types/pagination/" - типы для пагинации для всего приложения.
-3.7 "/src/core/types/validation/" - типы для валидации для всего приложения.
-3.8 "/src/core/utils/pagination/" - утилиты для пагинации для всего приложения.
 
-4. "/src/db/" - код, связанный с БД.
-4.1 "/src/db/mongodb/mongo.db.ts" - код, связанный с MongoDB.
-4.2 "/src/db/mongodb/data/db/" - локальная БД MongoDB.
+3. "/src/comments/" - код, связанный с комментариями.
+3.1 "/src/comments/application/comments.service.ts" - сервис для работы с комментариями.
+3.2 "/src/comments/application/comments.query-service.ts" - query-сервис для работы с комментариями.
+3.3 "/src/comments/docs/" - документация Swagger для комментариев.
+3.4 "/src/comments/repositories/comments.repository.ts" - репозиторий для работы с комментариями в БД.
+3.5 "/src/comments/repositories/comments.query-repository.ts" - query-репозиторий для работы с комментариями в БД.
+3.6 "/src/comments/repositories/mappers/" - функции-преобразователи для работы с комментариями из БД.
+3.7 "/src/comments/routes/comments.router.ts" - роутер для работы с комментариями.
+3.8 "/src/comments/routes/handlers/" - функции-обработчики для роутера для работы с комментариями.
+3.9 "/src/comments/routes/input-dto/" - input DTO для комментариев.
+3.10 "/src/comments/routes/output-dto/" - output DTO для комментариев.
+3.11 "/src/comments/types/" - типы для комментариев.
+3.12 "/src/comments/validation/" - валидационные middlewares для входных данных при работе с комментариями.
 
-5. "/src/posts/" - код, связанный с постами.
-5.1 "/src/posts/application/posts.service.ts" - сервис для работы с данными по постам.
-5.2 "/src/posts/application/posts.query-service.ts" - query-сервис для работы с данными по постам.
-5.3 "/src/posts/docs/" - документация Swagger по постам.
-5.4 "/src/posts/repositories/posts.repository.ts" - репозиторий для работы с данными по постам в БД.
-5.5 "/src/posts/repositories/posts.query-repository.ts" - query-репозиторий для работы с данными по постам в БД.
-5.6 "/src/posts/repositories/mappers/" - функции-преобразователи для работы с данными по постам из БД.
-5.7 "/src/posts/routes/posts.router.ts" - роутер для работы с данными по постам.
-5.8 "/src/posts/routes/handlers/" - функции-обработчики для роутера для работы с данными по постам.
-5.9 "/src/posts/routes/input-dto/" - DTO для входных данных по постам.
-5.10 "/src/posts/routes/output-dto/" - DTO для исходящих данных по постам.
-5.11 "/src/posts/types/" - типы для постов.
-5.12 "/src/posts/validation/" - валидационные middlewares для входных данных по постам.
+4. "/src/core/" - общий код для всего приложения.
+4.1 "/src/core/errors/" - код, связанный с ошибками.
+4.2 "/src/core/middlewares/validation/input-validation-result.middleware.ts" - валидационный middleware для формирования
+ошибок валидации для отправки клиенту.
+4.3 "/src/core/middlewares/validation/pagination-validation.middleware.ts" - валидационный middleware для проверки
+настроек пагинации в query-параметрах запросов.
+4.4 "/src/core/middlewares/validation/params-id-validation.middlewares.ts" - валидационные middlewares для проверки
+различных ID в запросах.
+4.5 "/src/core/settings/settings.ts" - глобальные настройки приложения.
+4.6 "/src/core/swagger/" - настройка Swagger для приложения.
+4.7 "/src/core/types/" - общие типы приложения.
+4.8 "/src/core/types/pagination" - типы для пагинации.
+4.9 "/src/core/types/result" - типы для ResultObject.
+4.10 "/src/core/types/validation" - типы для валидации.
+4.11 "/src/core/utils/pagination/" - утилиты для пагинации.
+4.12 "/src/core/utils/result/" - утилиты для ResultObject.
 
-6. "/src/testing/" - код, связанный с тестированием приложения.
-6.1 "/src/testing/docs/" - документация Swagger по тестированию.
-6.2 "/src/testing/routes/testing.router.ts" - роутер для тестирования приложения.
+5. "/src/db/" - код, связанный с БД.
+5.1 "/src/db/mongodb/mongo.db.ts" - код, связанный с MongoDB.
+5.2 "/src/db/mongodb/data/db/" - локальная БД MongoDB.
 
-7. "/src/users/" - код, связанный с пользователями.
-7.1 "/src/users/application/users.service.ts" - сервис для работы с данными по пользователям.
-7.2 "/src/users/application/users.query-service.ts" - query-сервис для работы с данными по пользователям.
-7.3 "/src/users/docs/" - документация Swagger по пользователям.
-7.4 "/src/users/repositories/users.repository.ts" - репозиторий для работы с данными по пользователям в БД.
-7.5 "/src/users/repositories/users.query-repository.ts" - query-репозиторий для работы с данными по пользователям в БД.
-7.6 "/src/users/repositories/mappers/" - функции-преобразователи для работы с данными по пользователям из БД.
-7.7 "/src/users/routes/users.router.ts" - роутер для работы с данными по пользователям.
-7.8 "/src/users/routes/handlers/" - функции-обработчики для роутера для работы с данными по пользователям.
-7.9 "/src/users/routes/input-dto/" - DTO для входных данных по пользователям.
-7.10 "/src/users/routes/output-dto/" - DTO для исходящих данных по пользователям.
-7.11 "/src/users/types/" - типы для пользователей.
-7.12 "/src/users/validation/" - валидационные middlewares для входных данных по пользователям.
+6. "/src/posts/" - код, связанный с постами.
+6.1 "/src/posts/application/posts.service.ts" - сервис для работы с постами.
+6.2 "/src/posts/application/posts.query-service.ts" - query-сервис для работы с постами.
+6.3 "/src/posts/docs/" - документация Swagger для постов.
+6.4 "/src/posts/repositories/posts.repository.ts" - репозиторий для работы с постами в БД.
+6.5 "/src/posts/repositories/posts.query-repository.ts" - query-репозиторий для работы с постами в БД.
+6.6 "/src/posts/repositories/mappers/" - функции-преобразователи для работы с постами из БД.
+6.7 "/src/posts/routes/posts.router.ts" - роутер для работы с постами.
+6.8 "/src/posts/routes/handlers/" - функции-обработчики для роутера для работы с постами.
+6.9 "/src/posts/routes/input-dto/" - input DTO для постов.
+6.10 "/src/posts/routes/output-dto/" - output DTO для постов.
+6.11 "/src/posts/types/" - типы для постов.
+6.12 "/src/posts/validation/" - валидационные middlewares для входных данных при работе с постами.
 
-8. "/__tests__/" - тестирование приложения.
-8.1 "/__tests__/e2e/auth/" - e2e-тесты для аутентификации.
-8.2 "/__tests__/e2e/blogs/" - e2e-тесты для блогов.
-8.3 "/__tests__/e2e/posts/" - e2e-тесты для постов.
-8.4 "/__tests__/e2e/users/" - e2e-тесты для пользователей.
-8.5 "/__tests__/utils/auth/" - утилиты по работе с авторизацией, связанные с тестированием приложения.
-8.6 "/__tests__/utils/blogs/" - утилиты, связанные с тестированием блогов.
-8.7 "/__tests__/utils/db/" - утилиты по работе с БД, связанные с тестированием приложения.
-8.8 "/__tests__/utils/posts/" - утилиты, связанные с тестированием постов.
-8.9 "/__tests__/utils/users/" - утилиты, связанные с тестированием пользователей.
+7. "/src/testing/" - код, связанный с тестированием приложения.
+7.1 "/src/testing/docs/" - документация Swagger для тестирования.
+7.2 "/src/testing/routes/testing.router.ts" - роутер для тестирования приложения.
+
+8. "/src/users/" - код, связанный с пользователями.
+8.1 "/src/users/application/users.service.ts" - сервис для работы с пользователями.
+8.2 "/src/users/application/users.query-service.ts" - query-сервис для работы с пользователями.
+8.3 "/src/users/docs/" - документация Swagger для пользователей.
+8.4 "/src/users/repositories/users.repository.ts" - репозиторий для работы с пользователями в БД.
+8.5 "/src/users/repositories/users.query-repository.ts" - query-репозиторий для работы с пользователями в БД.
+8.6 "/src/users/repositories/mappers/" - функции-преобразователи для работы с пользователями из БД.
+8.7 "/src/users/routes/users.router.ts" - роутер для работы с пользователями.
+8.8 "/src/users/routes/handlers/" - функции-обработчики для роутера для работы с пользователями.
+8.9 "/src/users/routes/input-dto/" - input DTO для пользователей.
+8.10 "/src/users/routes/output-dto/" - output DTO для пользователей.
+8.11 "/src/users/types/" - типы для пользователей.
+8.12 "/src/users/validation/" - валидационные middlewares для входных данных при работе пользователями.
+
+9. "/__tests__/" - код, связанный с тестированием приложения.
+9.1 "/__tests__/integration/" - интеграционные API тесты.
+9.2 "/__tests__/utils/" - утилиты, используемые в тестировании приложения.

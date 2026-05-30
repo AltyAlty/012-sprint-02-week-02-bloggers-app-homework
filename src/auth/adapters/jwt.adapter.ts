@@ -1,8 +1,8 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { SETTINGS } from '../../core/settings/settings';
 
-/*Адаптер "jwtService" для работы с библиотекой jsonwebtoken.*/
-export const jwtService = {
+/*Адаптер "jwtAdapter" для работы с библиотекой jsonwebtoken.*/
+export const jwtAdapter = {
   /*Метод "createToken()" для создания JWT.*/
   async createToken(userId: any): Promise<string> {
     return new Promise((resolve, reject) => {

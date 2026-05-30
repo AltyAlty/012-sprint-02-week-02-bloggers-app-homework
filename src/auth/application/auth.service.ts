@@ -1,8 +1,8 @@
-import { bcryptService } from '../adapters/bcrypt.service';
-import { argon2Service } from '../adapters/argon2.service';
+import { bcryptAdapter } from '../adapters/bcrypt.adapter';
+import { argon2Adapter } from '../adapters/argon2.adapter';
 import { ResultStatuses } from '../../core/types/result/result-statuses';
 import { Result } from '../../core/types/result/result.type';
-import { jwtService } from '../adapters/jwt.service';
+import { jwtAdapter } from '../adapters/jwt.adapter';
 import { usersService } from '../../users/application/users.service';
 import { UserOutputDTO } from '../../users/routes/output-dto/user.output-dto';
 
@@ -23,8 +23,8 @@ export const authService = {
       };
     }
 
-    /*Если проверка прошла успешно, то просим адаптер "jwtService" создать AT.*/
-    const accessToken: string = await jwtService.createToken(checkedUserCredentialsResult.data!.id);
+    /*Если проверка прошла успешно, то просим адаптер "jwtAdapter" создать AT.*/
+    const accessToken: string = await jwtAdapter.createToken(checkedUserCredentialsResult.data!.id);
 
     /*Возвращаем ResultObject с AT.*/
     return {
@@ -50,14 +50,14 @@ export const authService = {
       };
     }
 
-    /*Если пользователь был найден, то просим адаптер "bcryptService" проверить подлинность пароля.*/
-    // const isPasswordCorrect: boolean = await bcryptService.checkPassword(
+    /*Если пользователь был найден, то просим адаптер "bcryptAdapter" проверить подлинность пароля.*/
+    // const isPasswordCorrect: boolean = await bcryptAdapter.checkPassword(
     //   password,
     //   userResult.data!.userOutputWithPasswordHash.passwordHash
     // );
 
-    /*Если пользователь был найден, то просим адаптер "argon2Service" проверить подлинность пароля.*/
-    const isPasswordCorrect: boolean = await argon2Service.checkPassword(
+    /*Если пользователь был найден, то просим адаптер "argon2Adapter" проверить подлинность пароля.*/
+    const isPasswordCorrect: boolean = await argon2Adapter.checkPassword(
       password,
       userResult.data!.userOutputWithPasswordHash.passwordHash
     );

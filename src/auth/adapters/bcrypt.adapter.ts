@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 
-/*Адаптер "bcryptService" для работы с библиотекой bcrypt.*/
-export const bcryptService = {
+/*Адаптер "bcryptAdapter" для работы с библиотекой bcrypt.*/
+export const bcryptAdapter = {
   /*Метод "generateHash()" для генерации хеша для паролей.*/
   async generateHash(password: string): Promise<string> {
     /*Генерируем хэш-соль. В качестве параметра для генерации хэш-соли указываем количество раундов, что является

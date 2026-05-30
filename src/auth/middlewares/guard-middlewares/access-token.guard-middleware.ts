@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { jwtService } from '../../adapters/jwt.service';
+import { jwtAdapter } from '../../adapters/jwt.adapter';
 import { IdType } from '../../../core/types/id.type';
 import { HttpStatuses } from '../../../core/types/http-statuses';
 
@@ -11,8 +11,8 @@ export const accessTokenGuardMiddleware = async (req: Request, res: Response, ne
   const [authType, token]: string[] = req.headers.authorization.split(' ');
   /*Если тип авторизации не "Bearer", то сообщаем об отказе в аутентификации клиенту.*/
   if (authType !== 'Bearer') return res.sendStatus(HttpStatuses.Unauthorized_401);
-  /*Если тип авторизации "Bearer", то просим адаптер "jwtService" верифицировать токен.*/
-  const payload: { userId: string } | null = await jwtService.verifyToken(token);
+  /*Если тип авторизации "Bearer", то просим адаптер "jwtAdapter" верифицировать токен.*/
+  const payload: { userId: string } | null = await jwtAdapter.verifyToken(token);
 
   /*Если верификация токена прошла успешно, то извлекаем ID пользователя и прикрепляем его к запросу. После чего
   разрешаем дальнейшее выполнение запроса при помощи функции "next()".*/

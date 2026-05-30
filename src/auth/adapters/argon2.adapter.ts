@@ -1,8 +1,8 @@
 import * as argon2 from '@node-rs/argon2';
 import { Algorithm, Version } from '@node-rs/argon2';
 
-/*Адаптер "argon2Service" для работы с библиотекой @node-rs/argon2.*/
-export const argon2Service = {
+/*Адаптер "argon2Adapter" для работы с библиотекой @node-rs/argon2.*/
+export const argon2Adapter = {
   /*Метод "generateHash()" для генерации хеша для паролей.*/
   async generateHash(password: string): Promise<string> {
     return argon2.hash(password, {

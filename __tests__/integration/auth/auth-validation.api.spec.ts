@@ -3,7 +3,7 @@ import { HttpStatuses } from '../../../src/core/types/http-statuses';
 import { createUser } from '../../utils/users/create-user';
 import { getCreateUserInputDTO } from '../../utils/users/get-create-user-input-dto';
 import { loginUser } from '../../utils/auth/login-user';
-import { jwtService } from '../../../src/auth/adapters/jwt.service';
+import { jwtAdapter } from '../../../src/auth/adapters/jwt.adapter';
 import { doBeforeTests } from '../../utils/common/do-before-tests';
 import { CreateUserInputDTO } from '../../../src/users/routes/input-dto/create-user.input-dto';
 import { UserOutputDTO } from '../../../src/users/routes/output-dto/user.output-dto';
@@ -50,8 +50,8 @@ describe('Auth API validation', () => {
       password: correctCreateUserPassword,
     });
 
-    const decodedToken_01: { userId: string } | null = await jwtService.verifyToken(accessToken_01);
-    const decodedToken_02: { userId: string } | null = await jwtService.verifyToken(accessToken_02);
+    const decodedToken_01: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_01);
+    const decodedToken_02: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_02);
 
     expect(typeof accessToken_01).toBe('string');
     expect(typeof accessToken_02).toBe('string');
@@ -109,10 +109,10 @@ describe('Auth API validation', () => {
       password: createUserPassword_02,
     });
 
-    const decodedToken_01: { userId: string } | null = await jwtService.verifyToken(accessToken_01);
-    const decodedToken_02: { userId: string } | null = await jwtService.verifyToken(accessToken_02);
-    const decodedToken_03: { userId: string } | null = await jwtService.verifyToken(accessToken_03);
-    const decodedToken_04: { userId: string } | null = await jwtService.verifyToken(accessToken_04);
+    const decodedToken_01: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_01);
+    const decodedToken_02: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_02);
+    const decodedToken_03: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_03);
+    const decodedToken_04: { userId: string } | null = await jwtAdapter.verifyToken(accessToken_04);
 
     expect(typeof accessToken_01).toBe('string');
     expect(typeof accessToken_02).toBe('string');

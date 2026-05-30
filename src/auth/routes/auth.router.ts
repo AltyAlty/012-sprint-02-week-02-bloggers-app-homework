@@ -5,7 +5,7 @@ import { inputValidationResultMiddleware } from '../../core/middlewares/validati
 import { accessTokenGuardMiddleware } from '../middlewares/guard-middlewares/access-token.guard-middleware';
 import { getAuthDataByTokenHandler } from './handlers/get-auth-data-by-token.handler';
 
-/*Роутер из Express для работы с аутентификацией.*/
+/*Роутер из Express для работы с аутентификацией и авторизацией.*/
 export const authRouter: Router = Router({});
 /*Конфигурируем роутер "authRouter".*/
 authRouter
